@@ -12,3 +12,8 @@ protocolo WebSocket con todos los paquetes, validación del QR, App Links, prueb
   intercambio de paquetes y como guía para el servidor falso de pruebas que hay que entregar.
 - `applicationId`: `vrlexo.control`. Hosts permitidos del QR: `vr.lexodive.com` (y `localhost`/IP local en debug).
 - Todo texto de la app en español (i18n preparado para en/pt). Código y comentarios en español, como el repo hermano.
+
+## Al terminar (entrega)
+Seguir "Cuando la app esté lista" del `README.md`: el APK + su `.sha256` se copian a
+`D:\github\vrLexo\public\app\` y la firma va en `D:\github\vrLexo\public\.well-known\assetlinks.json`.
+Dejá escrito en `docs/ENTREGA.md` el `applicationId`, la versión, el SHA-256 del certificado de firma y el del APK.
