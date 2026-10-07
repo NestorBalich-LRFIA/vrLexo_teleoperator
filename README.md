@@ -117,7 +117,7 @@ app es **avisar**:
 - El envío no depende de re-renders: el estado de los botones vive en `ExtClient` y un `setInterval` de 50 ms reenvía.
 - Segundo plano (`AppState`): se suelta todo, se manda cero y se cierra el socket (sin `EXT_LEAVE`, para conservar el
   robot durante la gracia de 20 s); al volver se reconecta con el mismo `deviceId`.
-- Sin analíticas ni trackers. Permisos: `CAMERA`, `INTERNET`, `VIBRATE` (el resto se bloquea en `app.json`).
+- Sin analíticas ni trackers. Permisos: `CAMERA`, `INTERNET`, `VIBRATE`, `HIGH_SAMPLING_RATE_SENSORS` (sin él, Android 12+ entrega el acelerómetro a ~5 Hz y la bolita va lenta; es de nivel normal, no pide nada al usuario) (el resto se bloquea en `app.json`).
 
 ag## Protocolo (contrato final del servidor)
 
