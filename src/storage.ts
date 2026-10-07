@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
 import { MAX_NOMBRE } from './config';
+import type { RobotBle } from './net/BleSocket';
 
 const K = {
   deviceId: 'vrlexo.deviceId',
@@ -8,6 +9,7 @@ const K = {
   sesion: 'vrlexo.sesion',
   volarSaltando: 'vrlexo.volarSaltando',
   inclinacion: 'vrlexo.inclinacion',
+  robotBle: 'vrlexo.robotBle',
 };
 
 export interface Sesion {
@@ -92,5 +94,23 @@ export async function leerInclinacion(): Promise<boolean> {
 export async function guardarInclinacion(v: boolean): Promise<void> {
   try {
     await AsyncStorage.setItem(K.inclinacion, v ? '1' : '0');
+  } catch {}
+}
+
+/** Último robot Bluetooth al que se conectó (para reconectar con un toque). */
+export async function leerRobotBle(): Promise<RobotBle | null> {
+  try {
+    const raw = await AsyncStorage.getItem(K.robotBle);
+    if (!raw) return null;
+    const r = JSON.parse(raw);
+    return typeof r?.id === 'string' && typeof r?.nombre === 'string' ? r : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function guardarRobotBle(r: RobotBle): Promise<void> {
+  try {
+    await AsyncStorage.setItem(K.robotBle, JSON.stringify(r));
   } catch {}
 }

@@ -7,19 +7,28 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Animated, AppState, GestureResponderEvent, LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SACUDIDA } from '../config';
 import { t, textoFin } from '../i18n';
+import { crearAdaptadorBle } from '../net/bleAdaptador';
+import { BleSocket, RobotBle } from '../net/BleSocket';
+import type { Canal } from '../net/canal';
 import { Boton, ExtClient } from '../net/ExtClient';
 import { FlightController } from '../sensors/FlightController';
 import { TiltController, celdaDe } from '../sensors/TiltController';
 import { AlturaSimulada } from '../sensors/AlturaSimulada';
 import Nivel from './Nivel';
 import PanelAltura, { ANCHO_PANEL_ALTURA } from './PanelAltura';
-import { borrarSesion, guardarInclinacion, guardarNombre, Sesion } from '../storage';
+import { borrarSesion, guardarInclinacion, guardarNombre, guardarRobotBle } from '../storage';
 import { BOTON_MIN, colores, radio, textoSobre } from '../theme';
 
 export type DestinoSalida = 'inicio' | 'escanear' | 'reintentar';
 
 interface Props {
-  sesion: Sesion;
+  /** null = todavía no se eligió cómo conectar: se muestra el panel con QR / Bluetooth. */
+  canal: Canal | null;
+  /** Último robot Bluetooth usado (para reconectar con un toque). */
+  robotBleGuardado: RobotBle | null;
+  onEscanear: () => void;
+  onBluetooth: () => void;
+  onReconectarBle: (r: RobotBle) => void;
   nombre: string;
   deviceId: string;
   volarSaltando: boolean;
@@ -128,7 +137,7 @@ const ETIQUETAS: Record<Tecla, { icono: string; clave: 'adelante' | 'atras' | 'g
   buzzer: { icono: '🔔', clave: 'buzzer' },
 };
 
-export default function Control({ sesion, nombre, deviceId, volarSaltando, inclinacion: inclinacionInicial, onSalir }: Props) {
+export default function Control({ canal, robotBleGuardado, onEscanear, onBluetooth, onReconectarBle, nombre, deviceId, volarSaltando, inclinacion: inclinacionInicial, onSalir }: Props) {
   useKeepAwake();
   const insets = useSafeAreaInsets();
   // Manejar inclinando: arranca como en Inicio y se puede cambiar acá mismo.
@@ -139,7 +148,20 @@ export default function Control({ sesion, nombre, deviceId, volarSaltando, incli
     guardarInclinacion(nuevo);
     Haptics.selectionAsync().catch(() => {});
   }
-  const client = useMemo(() => new ExtClient({ url: sesion.url, token: sesion.token, deviceId, name: nombre }), [sesion, deviceId, nombre]);
+  const client = useMemo(() => {
+    if (canal?.tipo === 'ble') {
+      const robot = canal.robot;
+      return new ExtClient({
+        url: `ble://${robot.id}`,
+        token: '',
+        deviceId,
+        canal: 'ble',
+        crearWebSocket: () => new BleSocket(crearAdaptadorBle(), robot),
+      });
+    }
+    return new ExtClient({ url: canal?.sesion.url ?? '', token: canal?.sesion.token ?? '', deviceId, name: nombre });
+  }, [canal, deviceId, nombre]);
+  const porBle = canal?.tipo === 'ble';
   const snap = useSyncExternalStore(client.subscribe, client.getSnapshot);
   const [tam, setTam] = useState({ w: 0, h: 0 });
   const [apretados, setApretados] = useState<Record<Tecla, boolean>>({ ...NINGUNO });
@@ -155,10 +177,12 @@ export default function Control({ sesion, nombre, deviceId, volarSaltando, incli
 
   // Conexión: se abre al montar y se cierra al desmontar.
   useEffect(() => {
-    guardarNombre(nombre);
-    client.conectar();
+    if (canal) {
+      guardarNombre(nombre);
+      client.conectar();
+    }
     return () => client.destruir();
-  }, [client, nombre]);
+  }, [client, canal, nombre]);
 
   // Segundo plano: soltar todo, cero y cerrar; al volver, reconectar con el mismo deviceId.
   useEffect(() => {
@@ -227,9 +251,14 @@ export default function Control({ sesion, nombre, deviceId, volarSaltando, incli
   // Fin de la conexión: borrar el token si corresponde y, si fue el botón Desconectar, volver al inicio.
   useEffect(() => {
     if (!snap.fin) return;
-    if (snap.fin.borrarToken) borrarSesion();
+    if (snap.fin.borrarToken && !porBle) borrarSesion();
     if (snap.fin.codigo === 'salio') onSalir('inicio');
-  }, [snap.fin, onSalir]);
+  }, [snap.fin, onSalir, porBle]);
+
+  // Robot Bluetooth que conectó bien: se recuerda para reconectar con un toque.
+  useEffect(() => {
+    if (canal?.tipo === 'ble' && snap.estado === 'conectado') guardarRobotBle(canal.robot);
+  }, [canal, snap.estado]);
 
   // Avisos cortos: error no fatal y nombre rechazado.
   const robotId = snap.robot?.id;
@@ -315,7 +344,7 @@ export default function Control({ sesion, nombre, deviceId, volarSaltando, incli
           <View style={styles.estado} accessible accessibilityLabel={estadoTexto}>
             <View style={[styles.punto, { backgroundColor: estadoColor }]} />
             <Text style={styles.estadoTexto}>{estadoTexto}</Text>
-            {snap.pingMs != null && snap.estado === 'conectado' && <Text style={styles.ping}>{t('pingMs', { ms: snap.pingMs })}</Text>}
+            {!porBle && snap.pingMs != null && snap.estado === 'conectado' && <Text style={styles.ping}>{t('pingMs', { ms: snap.pingMs })}</Text>}
           </View>
         </View>
         <View style={styles.acciones}>
@@ -396,7 +425,30 @@ export default function Control({ sesion, nombre, deviceId, volarSaltando, incli
         </View>
       )}
 
-      {enCurso && !mostrarFin && (
+      {!canal && (
+        <View style={styles.velo}>
+          <View style={styles.tarjeta}>
+            <Text style={styles.finTitulo}>{t('elegirCanal')}</Text>
+            <Pressable style={[styles.opcionCanal, { backgroundColor: colores.acento }]} onPress={onEscanear} accessibilityRole="button">
+              <Text style={[styles.opcionTitulo, { color: colores.textoSobreAcento }]}>📷 {t('conectarQr')}</Text>
+              <Text style={[styles.opcionAyuda, { color: colores.textoSobreAcento }]}>{t('conectarQrAyuda')}</Text>
+            </Pressable>
+            <Pressable style={[styles.opcionCanal, { backgroundColor: colores.acento }]} onPress={onBluetooth} accessibilityRole="button">
+              <Text style={[styles.opcionTitulo, { color: colores.textoSobreAcento }]}>🔵 {t('conectarBle')}</Text>
+              <Text style={[styles.opcionAyuda, { color: colores.textoSobreAcento }]}>{t('conectarBleAyuda')}</Text>
+            </Pressable>
+            {robotBleGuardado && (
+              <Pressable style={styles.btnFin} onPress={() => onReconectarBle(robotBleGuardado)} accessibilityRole="button">
+                <Text style={styles.btnFinTexto} numberOfLines={1}>
+                  ↻ {t('reconectarRobot', { nombre: robotBleGuardado.nombre })}
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        </View>
+      )}
+
+      {canal && enCurso && !mostrarFin && (
         <View style={styles.velo}>
           <Text style={styles.veloTitulo}>{snap.estado === 'reconectando' ? t('reconectando') : t('conectando')}</Text>
         </View>
@@ -468,5 +520,8 @@ const styles = StyleSheet.create({
   finTexto: { color: colores.texto, fontSize: 16 },
   finBotones: { flexDirection: 'row', gap: 12, marginTop: 4 },
   btnFin: { flex: 1, minHeight: 48, borderRadius: radio.chico, backgroundColor: colores.superficieAlta, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12 },
+  opcionCanal: { minHeight: 72, borderRadius: radio.boton, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12 },
+  opcionTitulo: { fontSize: 20, fontWeight: '800', textAlign: 'center' },
+  opcionAyuda: { fontSize: 14, textAlign: 'center' },
   btnFinTexto: { color: colores.texto, fontSize: 16, fontWeight: '700', textAlign: 'center' },
 });

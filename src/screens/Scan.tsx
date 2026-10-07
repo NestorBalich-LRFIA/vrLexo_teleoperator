@@ -11,9 +11,12 @@ interface Props {
   onLeido: (s: Sesion) => void;
   onPegar: () => void;
   onVolver: () => void;
+  sesionGuardada: Sesion | null;
+  onVolverAEntrar: (s: Sesion) => void;
+  onAyuda: () => void;
 }
 
-export default function Scan({ onLeido, onPegar, onVolver }: Props) {
+export default function Scan({ onLeido, onPegar, onVolver, sesionGuardada, onVolverAEntrar, onAyuda }: Props) {
   const insets = useSafeAreaInsets();
   const [permiso, pedirPermiso] = useCameraPermissions();
   const [error, setError] = useState<string | null>(null);
@@ -56,12 +59,24 @@ export default function Scan({ onLeido, onPegar, onVolver }: Props) {
       </View>
 
       <View style={[styles.abajo, { bottom: insets.bottom + 16 }]}>
-        <Pressable style={styles.boton} onPress={onPegar} accessibilityRole="button">
-          <Text style={styles.botonTexto}>{t('usarEnlace')}</Text>
-        </Pressable>
-        <Pressable style={styles.boton} onPress={onVolver} accessibilityRole="button">
-          <Text style={styles.botonTexto}>{t('volver')}</Text>
-        </Pressable>
+        <View style={styles.fila}>
+          <Pressable style={styles.boton} onPress={onPegar} accessibilityRole="button">
+            <Text style={styles.botonTexto}>🔗 {t('usarEnlace')}</Text>
+          </Pressable>
+          {sesionGuardada && (
+            <Pressable style={styles.boton} onPress={() => onVolverAEntrar(sesionGuardada)} accessibilityRole="button">
+              <Text style={styles.botonTexto}>↻ {t('volverAEntrar')}</Text>
+            </Pressable>
+          )}
+        </View>
+        <View style={styles.fila}>
+          <Pressable style={styles.boton} onPress={onAyuda} accessibilityRole="button">
+            <Text style={styles.botonTexto}>❓ {t('comoSeUsa')}</Text>
+          </Pressable>
+          <Pressable style={styles.boton} onPress={onVolver} accessibilityRole="button">
+            <Text style={styles.botonTexto}>← {t('volver')}</Text>
+          </Pressable>
+        </View>
       </View>
     </View>
   );
@@ -74,7 +89,8 @@ const styles = StyleSheet.create({
   arriba: { position: 'absolute', top: 48, left: 16, right: 16, gap: 8, alignItems: 'center' },
   instruccion: { color: colores.texto, backgroundColor: 'rgba(11,18,32,0.8)', fontSize: 18, fontWeight: '700', textAlign: 'center', padding: 10, borderRadius: radio.chico, overflow: 'hidden' },
   error: { color: colores.textoSobreAcento, backgroundColor: colores.aviso, fontSize: 16, fontWeight: '700', textAlign: 'center', padding: 10, borderRadius: radio.chico, overflow: 'hidden' },
-  abajo: { position: 'absolute', bottom: 24, left: 16, right: 16, flexDirection: 'row', gap: 12 },
+  abajo: { position: 'absolute', bottom: 24, left: 16, right: 16, gap: 12 },
+  fila: { flexDirection: 'row', gap: 12 },
   boton: { flex: 1, minHeight: 56, borderRadius: radio.boton, backgroundColor: 'rgba(22,32,51,0.92)', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colores.borde },
   botonTexto: { color: colores.texto, fontSize: 16, fontWeight: '700' },
   principal: { backgroundColor: colores.acento, borderRadius: radio.boton, minHeight: 56, paddingHorizontal: 24, alignItems: 'center', justifyContent: 'center' },

@@ -15,3 +15,15 @@ Nada bloqueante. Decisiones tomadas y puntos para confirmar con el equipo del se
    proporcional a la aceleración vertical (más rápido = más alto) y baja sola. Los valores del protocolo siguen en 0..100,
    pero se mandan más `ROBOT_SET` (hasta 10/s). Umbrales en `SACUDIDA`, `src/config.ts`, a calibrar con celulares reales.
 6. **App Link verificado**: necesita el SHA-256 del certificado de firma en `assetlinks.json` (ver `docs/ENTREGA.md`).
+
+## Canal Bluetooth (robot físico) — contrato provisorio
+
+Lo implementa `src/net/BleSocket.ts` (UUIDs y MTU en `BLE`, `src/config.ts`). El firmware real todavía no existe: confirmar con quien lo haga.
+
+7. **Transporte**: BLE con servicio tipo Nordic UART (RX = app→robot, escritura sin respuesta; TX = robot→app, notificaciones).
+8. **Formato**: el mismo JSON de los paquetes del servidor (`ROBOT_COMMAND`, `ROBOT_SET`), una línea por paquete terminada en `\n`,
+   troceada según el MTU (se piden 247). El firmware junta hasta el `\n`.
+9. **Handshake**: lo resuelve la app. `EXT_HELLO` → `EXT_READY` local (`robotId` = id del dispositivo), `PING` → `PONG` local, `EXT_LEAVE` no se envía.
+   El `robotId` llega igual en cada paquete; el firmware puede ignorarlo.
+10. **Seguridad**: el firmware debe parar los motores si pasan ~300 ms sin `ROBOT_COMMAND` (la app reenvía cada 50 ms mientras haya dirección).
+11. **Sin confirmar**: si el robot soporta `helice`, `led`, `sword`, `buzzer` (hoy la app los manda igual); si publica los robots con el UUID de servicio (el escaneo filtra por él).

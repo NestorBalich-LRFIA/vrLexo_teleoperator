@@ -8,8 +8,6 @@ import type { Actualizacion } from '../update/actualizacion';
 import { colores, radio } from '../theme';
 
 interface Props {
-  nombre: string;
-  onNombre: (n: string) => void;
   sesionGuardada: Sesion | null;
   mensaje: string | null;
   actualizacion: Actualizacion | null;
@@ -18,6 +16,7 @@ interface Props {
   onEscanear: () => void;
   onConectar: (s: Sesion) => void;
   onAyuda: () => void;
+  onVolver: () => void;
 }
 
 export default function Home(p: Props) {
@@ -59,18 +58,6 @@ export default function Home(p: Props) {
           </Pressable>
         )}
 
-        <Text style={styles.etiqueta}>{t('nombreRobot')}</Text>
-        <TextInput
-          style={styles.input}
-          value={p.nombre}
-          onChangeText={p.onNombre}
-          maxLength={MAX_NOMBRE}
-          placeholder={t('nombrePlaceholder')}
-          placeholderTextColor={colores.textoSuave}
-          autoCorrect={false}
-          accessibilityLabel={t('nombreRobot')}
-        />
-
         <Pressable style={styles.principal} onPress={p.onEscanear} accessibilityRole="button" accessibilityLabel={t('escanear')}>
           <Text style={styles.principalTexto}>📷 {t('escanear')}</Text>
         </Pressable>
@@ -109,6 +96,10 @@ export default function Home(p: Props) {
 
         <Pressable style={styles.secundario} onPress={p.onAyuda} accessibilityRole="button">
           <Text style={styles.secundarioTexto}>❓ {t('comoSeUsa')}</Text>
+        </Pressable>
+
+        <Pressable style={styles.secundario} onPress={p.onVolver} accessibilityRole="button">
+          <Text style={styles.secundarioTexto}>← {t('volver')}</Text>
         </Pressable>
 
         <Text style={styles.version}>{t('version', { v: p.version })}</Text>

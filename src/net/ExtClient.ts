@@ -28,6 +28,8 @@ export type CodigoFin =
   | 'expulsado'
   | 'sin_conexion'
   | 'sin_respuesta'
+  | 'ble_sin_conexion'
+  | 'ble_sin_respuesta'
   | 'salio';
 
 export interface Fin {
@@ -83,6 +85,8 @@ export interface OpcionesExtClient {
   deviceId: string;
   /** Nombre pedido (se omite si está vacío). */
   name?: string;
+  /** Por dónde se conecta: 'qr' (servidor, por defecto) o 'ble' (robot físico); solo cambia los textos de fin. */
+  canal?: 'qr' | 'ble';
   crearWebSocket?: (url: string) => WebSocketLike;
 }
 
@@ -417,7 +421,9 @@ export class ExtClient {
     this.limpiarTimers();
     this.listo = false;
     if (!this.huboListo) {
-      return this.terminar({ codigo, borrarToken: false });
+      const porBle = this.opc.canal === 'ble';
+      const fin: CodigoFin = porBle ? (codigo === 'sin_conexion' ? 'ble_sin_conexion' : 'ble_sin_respuesta') : codigo;
+      return this.terminar({ codigo: fin, borrarToken: false });
     }
     const espera = BACKOFF_MS[Math.min(this.intento, BACKOFF_MS.length - 1)];
     this.intento++;

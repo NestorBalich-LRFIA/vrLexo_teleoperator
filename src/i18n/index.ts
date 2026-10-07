@@ -55,6 +55,8 @@ const claveFin: Record<CodigoFin, Claves> = {
   expulsado: 'finExpulsado',
   sin_conexion: 'finSinConexion',
   sin_respuesta: 'finSinRespuesta',
+  ble_sin_conexion: 'finBleSinConexion',
+  ble_sin_respuesta: 'finBleSinRespuesta',
   salio: 'finCerrado',
 };
 

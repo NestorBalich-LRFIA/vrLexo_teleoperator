@@ -109,3 +109,24 @@ export const INCLINACION = {
 
 /** Vibración corta al apretar un botón. */
 export const VIBRACION_MS = 15;
+
+/**
+ * Robot físico por Bluetooth Low Energy. Habla el mismo JSON que el servidor (una línea por paquete, terminada en "
+")
+ * sobre un servicio tipo UART: la app escribe en RX y el robot responde por notificaciones en TX.
+ * Por defecto, Nordic UART Service (lo que traen casi todos los ESP32/Arduino BLE de ejemplo). Cambiarlo acá si el firmware usa otro.
+ */
+export const BLE = {
+  servicio: '6E400001-B5A0-F393-E0A9-E50E24DCCA9E',
+  /** App → robot (escritura sin respuesta). */
+  caracteristicaRx: '6E400002-B5A0-F393-E0A9-E50E24DCCA9E',
+  /** Robot → app (notificaciones). */
+  caracteristicaTx: '6E400003-B5A0-F393-E0A9-E50E24DCCA9E',
+  /** MTU que se pide al conectar (Android admite hasta 517); sin negociar quedan 23 (20 bytes útiles). */
+  mtuPedido: 247,
+  /** Cuánto se escanea antes de parar y cuánto se espera la conexión. */
+  escaneoMs: 10000,
+  conexionMs: 10000,
+  /** Cola de salida: si hay más de esto sin enviar, se descartan los ROBOT_COMMAND viejos (importa el último). */
+  colaMax: 8,
+};

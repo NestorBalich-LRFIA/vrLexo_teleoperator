@@ -8,17 +8,23 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { textoErrorQr } from './src/i18n';
 import { parseJoinUrl } from './src/qr/parseJoinUrl';
 import AvisoActualizacion from './src/screens/AvisoActualizacion';
+import BuscarRobot from './src/screens/BuscarRobot';
+import type { RobotBle } from './src/net/BleSocket';
+import type { Canal } from './src/net/canal';
 import Control, { DestinoSalida } from './src/screens/Control';
+import PedirNombre from './src/screens/PedirNombre';
 import Help from './src/screens/Help';
 import Home from './src/screens/Home';
 import Scan from './src/screens/Scan';
 import {
   Sesion,
+  guardarNombre,
   guardarSesion,
   guardarInclinacion,
   guardarVolarSaltando,
   leerInclinacion,
   leerNombre,
+  leerRobotBle,
   leerSesion,
   leerVolarSaltando,
   obtenerDeviceId,
@@ -27,7 +33,8 @@ import { View } from 'react-native';
 import { Actualizacion, consultarVersion } from './src/update/actualizacion';
 import { colores } from './src/theme';
 
-type Pantalla = 'inicio' | 'escanear' | 'ayuda' | 'control';
+/** 'control' es la pantalla de entrada; 'inicio' queda como "Opciones" (pegar enlace, volver a entrar, ayuda). */
+type Pantalla = 'inicio' | 'escanear' | 'ayuda' | 'control' | 'bluetooth' | 'nombre';
 
 /** Android 15 dibuja la app bajo las barras del sistema: se respetan los márgenes seguros (barra de estado, cámara, navegación). */
 export default function App() {
@@ -40,16 +47,19 @@ export default function App() {
 
 function Aplicacion() {
   const insets = useSafeAreaInsets();
-  const [pantalla, setPantalla] = useState<Pantalla>('inicio');
+  const [pantalla, setPantalla] = useState<Pantalla>('control');
   const [listo, setListo] = useState(false);
   const [deviceId, setDeviceId] = useState('');
   const [nombre, setNombre] = useState('');
   const [volarSaltando, setVolarSaltando] = useState(true);
   const [inclinacion, setInclinacion] = useState(false);
   const [sesionGuardada, setSesionGuardada] = useState<Sesion | null>(null);
-  const [sesion, setSesion] = useState<Sesion | null>(null);
+  const [porNombrar, setPorNombrar] = useState<Sesion | null>(null);
+  const [canal, setCanal] = useState<Canal | null>(null);
+  const [robotBle, setRobotBle] = useState<RobotBle | null>(null);
   const [claveControl, setClaveControl] = useState(0);
   const [mensaje, setMensaje] = useState<string | null>(null);
+  const ayudaDesde = useRef<'inicio' | 'escanear' | 'bluetooth'>('inicio');
   const nombreRef = useRef('');
   nombreRef.current = nombre;
 
@@ -73,20 +83,30 @@ function Aplicacion() {
 
   useEffect(() => {
     (async () => {
-      const [id, n, v, s, inc] = await Promise.all([obtenerDeviceId(), leerNombre(), leerVolarSaltando(), leerSesion(), leerInclinacion()]);
+      const [id, n, v, s, inc, rb] = await Promise.all([obtenerDeviceId(), leerNombre(), leerVolarSaltando(), leerSesion(), leerInclinacion(), leerRobotBle()]);
       setDeviceId(id);
       setNombre(n);
       setVolarSaltando(v);
       setSesionGuardada(s);
+      setRobotBle(rb);
       setInclinacion(inc);
       setListo(true);
     })();
   }, []);
 
+  /** Con el QR ya leído: se pregunta el nombre del robot y recién ahí se conecta. */
   const entrar = useCallback((s: Sesion) => {
+    setPorNombrar(s);
+    setPantalla('nombre');
+  }, []);
+
+  const conectarQr = useCallback((s: Sesion, n: string) => {
     guardarSesion(s);
+    guardarNombre(n);
+    setNombre(n);
+    nombreRef.current = n;
     setSesionGuardada(s);
-    setSesion(s);
+    setCanal({ tipo: 'qr', sesion: s });
     setMensaje(null);
     setClaveControl((k) => k + 1);
     setPantalla('control');
@@ -123,6 +143,14 @@ function Aplicacion() {
     return () => sub.remove();
   }, [listo, alEnlace]);
 
+  const entrarPorBle = useCallback((r: RobotBle) => {
+    setRobotBle(r);
+    setCanal({ tipo: 'ble', robot: r });
+    setMensaje(null);
+    setClaveControl((k) => k + 1);
+    setPantalla('control');
+  }, []);
+
   // Vertical en todas las pantallas menos en el control (que se bloquea apaisado por su cuenta).
   useEffect(() => {
     if (pantalla !== 'control') ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {});
@@ -131,8 +159,12 @@ function Aplicacion() {
   // Botón atrás de Android.
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-      if (pantalla === 'escanear' || pantalla === 'ayuda') {
-        setPantalla('inicio');
+      if (pantalla === 'ayuda') {
+        setPantalla(ayudaDesde.current);
+        return true;
+      }
+      if (pantalla !== 'control') {
+        setPantalla('control');
         return true;
       }
       return false;
@@ -148,7 +180,11 @@ function Aplicacion() {
       }
       setSesionGuardada(await leerSesion());
       setNombre(await leerNombre());
-      setPantalla(destino === 'escanear' ? 'escanear' : 'inicio');
+      if (destino === 'escanear') return setPantalla('escanear');
+      // "Inicio": se vuelve al panel de elección de conexión.
+      setCanal(null);
+      setClaveControl((k) => k + 1);
+      setPantalla('control');
     },
     [],
   );
@@ -161,8 +197,6 @@ function Aplicacion() {
       {pantalla === 'inicio' && (
         <View style={{ flex: 1, backgroundColor: colores.fondo, paddingTop: insets.top, paddingBottom: insets.bottom }}>
         <Home
-          nombre={nombre}
-          onNombre={setNombre}
           sesionGuardada={sesionGuardada}
           mensaje={mensaje}
           version={version}
@@ -176,20 +210,59 @@ function Aplicacion() {
             setPantalla('escanear');
           }}
           onConectar={entrarConAviso}
-          onAyuda={() => setPantalla('ayuda')}
+          onAyuda={() => {
+            ayudaDesde.current = 'inicio';
+            setPantalla('ayuda');
+          }}
+          onVolver={() => setPantalla('control')}
         />
         </View>
       )}
-      {pantalla === 'escanear' && <Scan onLeido={entrarConAviso} onPegar={() => setPantalla('inicio')} onVolver={() => setPantalla('inicio')} />}
-      {pantalla === 'ayuda' && (
+      {pantalla === 'escanear' && (
+        <Scan onLeido={entrarConAviso} onPegar={() => setPantalla('inicio')}
+          onVolver={() => setPantalla('control')}
+          sesionGuardada={sesionGuardada}
+          onVolverAEntrar={entrarConAviso}
+          onAyuda={() => {
+            ayudaDesde.current = 'escanear';
+            setPantalla('ayuda');
+          }}
+        />
+      )}
+      {pantalla === 'nombre' && porNombrar && (
         <View style={{ flex: 1, backgroundColor: colores.fondo, paddingTop: insets.top, paddingBottom: insets.bottom }}>
-          <Help version={version} onVolver={() => setPantalla('inicio')} />
+          <PedirNombre nombreInicial={nombre} onConfirmar={(n) => conectarQr(porNombrar, n)} onCancelar={() => setPantalla('control')} />
         </View>
       )}
-      {pantalla === 'control' && sesion && (
+      {pantalla === 'bluetooth' && (
+        <View style={{ flex: 1, backgroundColor: colores.fondo, paddingTop: insets.top, paddingBottom: insets.bottom }}>
+          <BuscarRobot
+            onElegido={entrarPorBle}
+            onVolver={() => setPantalla('control')}
+            onAyuda={() => {
+              ayudaDesde.current = 'bluetooth';
+              setPantalla('ayuda');
+            }}
+          />
+        </View>
+      )}
+      {pantalla === 'ayuda' && (
+        <View style={{ flex: 1, backgroundColor: colores.fondo, paddingTop: insets.top, paddingBottom: insets.bottom }}>
+          <Help version={version} tema={ayudaDesde.current === 'bluetooth' ? 'ble' : 'qr'} onVolver={() => setPantalla(ayudaDesde.current)} />
+        </View>
+      )}
+      {pantalla === 'control' && (
         <Control
           key={claveControl}
-          sesion={sesion}
+          canal={canal}
+          robotBleGuardado={robotBle}
+          onEscanear={() => {
+            revisarVersion();
+            setMensaje(null);
+            setPantalla('escanear');
+          }}
+          onBluetooth={() => setPantalla('bluetooth')}
+          onReconectarBle={entrarPorBle}
           nombre={nombreRef.current}
           deviceId={deviceId}
           volarSaltando={volarSaltando}
