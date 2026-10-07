@@ -83,11 +83,14 @@ export const ALTURA = {
 /** Manejar inclinando el celular (acelerómetro). Girar el celular como un volante = girar; inclinar arriba/abajo = avanzar/retroceder. */
 export const INCLINACION = {
   /** Grados sin efecto alrededor del punto neutro (evita temblor). Debe ser maxGrados/3: así el cuadro de 3x3 coincide con la orden real. */
-  zonaMuertaGrados: 15,
+  zonaMuertaGrados: 12,
   /** Grados a los que se llega a la velocidad máxima (SPEED). */
-  maxGrados: 45,
-  /** Suavizado del sensor (0..1; más bajo = más lento): un movimiento rápido no llega a mover el robot, hay que inclinar despacio. */
-  filtro: 0.12,
+  maxGrados: 36,
+  /**
+   * Constante de tiempo del suavizado del sensor, en ms (más alto = más lento). Está en tiempo y no por muestra para que
+   * responda igual aunque el celular entregue menos de 50 lecturas por segundo. Un temblor más rápido que esto no mueve el robot.
+   */
+  suavizadoMs: 80,
   /** Si la magnitud total sale de este rango el celular se está sacudiendo/saltando y se ignora la muestra. */
   gMin: 0.85,
   gMax: 1.15,

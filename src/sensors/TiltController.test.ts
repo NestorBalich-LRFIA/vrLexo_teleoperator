@@ -24,9 +24,9 @@ describe('TiltController', () => {
   it('inclinar la pantalla hacia adelante avanza y hacia atrás retrocede', () => {
     const c = new TiltController();
     estable(c, pose(25, 0));
-    expect(estable(c, pose(70, 0)).traction).toBe(SPEED); // 45° = máximo
+    expect(estable(c, pose(70, 0)).traction).toBe(SPEED); // 45° ≥ 36° = máximo
     expect(estable(c, pose(-20, 0)).traction).toBe(-SPEED);
-    expect(estable(c, pose(35, 0)).traction).toBe(0); // 10°: dentro de la zona muerta (15°)
+    expect(estable(c, pose(35, 0)).traction).toBe(0); // 10°: dentro de la zona muerta (12°)
   });
 
   it('girar como volante en sentido horario gira a la derecha', () => {
@@ -34,13 +34,13 @@ describe('TiltController', () => {
     estable(c, pose(45, 0));
     expect(estable(c, pose(45, 60)).steering).toBe(SPEED);
     expect(estable(c, pose(45, -60)).steering).toBe(-SPEED);
-    expect(estable(c, pose(45, 12)).steering).toBe(0); // inclinación chica: no mueve el robot
+    expect(estable(c, pose(45, 10)).steering).toBe(0); // inclinación chica: no mueve el robot
   });
 
   it('proporcional entre la zona muerta y el máximo', () => {
     const c = new TiltController();
     estable(c, pose(45, 0));
-    const r = estable(c, pose(45, 30)).steering; // a mitad de camino entre 15° y 45°
+    const r = estable(c, pose(45, 30)).steering; // entre la zona muerta (12°) y el máximo (36°)
     expect(r).toBeGreaterThan(0);
     expect(r).toBeLessThan(SPEED);
   });
@@ -70,11 +70,11 @@ describe('TiltController: valores para la burbuja', () => {
   it('vx/vy siguen la inclinación sin zona muerta, entre −1 y 1', () => {
     const c = new TiltController();
     estable(c, pose(45, 0));
-    const r = estable(c, pose(45, 22.5));
+    const r = estable(c, pose(45, 18));
     expect(r.steering).toBeGreaterThan(0);
-    expect(r.vx).toBeCloseTo(0.5, 1); // 22,5° de 45°
+    expect(r.vx).toBeCloseTo(0.5, 1); // 18° de 36°
     expect(estable(c, pose(45, 80)).vx).toBe(1);
-    expect(estable(c, pose(67.5, 0)).vy).toBeCloseTo(0.5, 1);
+    expect(estable(c, pose(63, 0)).vy).toBeCloseTo(0.5, 1);
     expect(estable(c, pose(20, 0)).vy).toBeLessThan(0);
   });
 });
@@ -153,5 +153,28 @@ describe('TiltController: celular plano (pantalla hacia arriba)', () => {
     estable(c, plano(0, 0));
     expect(estable(c, plano(0, 35)).traction).toBe(0);
     expect(estable(c, plano(35, 0)).steering).toBe(0);
+  });
+});
+
+describe('TiltController: suavizado en tiempo real', () => {
+  /** Alimenta el controlador a `hz` lecturas por segundo durante `ms` y devuelve la última salida. */
+  function correr(hz: number, ms: number) {
+    const c = new TiltController();
+    const dt = 1000 / hz;
+    c.muestra(...pose(45, 0), 0); // neutro
+    let r = c.muestra(...pose(45, 0), 0)!;
+    for (let t = dt; t <= ms; t += dt) r = c.muestra(...pose(45, 30), t)!; // gira 30° de golpe
+    return r;
+  }
+
+  it('responde igual aunque el celular entregue menos lecturas por segundo', () => {
+    const a50 = correr(50, 400).steering;
+    const a15 = correr(15, 400).steering;
+    expect(a50).toBeGreaterThan(40);
+    expect(Math.abs(a50 - a15)).toBeLessThanOrEqual(6); // antes a 15 Hz era ~3 veces más lento
+  });
+
+  it('llega a la orden en menos de medio segundo', () => {
+    expect(correr(50, 500).steering).toBeGreaterThan(45);
   });
 });

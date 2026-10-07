@@ -40,6 +40,7 @@ export class TiltController {
   private fy = 0;
   private fz = 0;
   private iniciado = false;
+  private ultimaMs = 0;
   private pitchNeutro: number | null = null;
 
   /** Toma la postura actual como neutra. */
@@ -48,11 +49,15 @@ export class TiltController {
   }
 
   /** Procesa una muestra. Devuelve null si hay que ignorarla (sacudida) y {0,0} si está boca abajo. */
-  muestra(x: number, y: number, z: number): Inclinacion | null {
+  muestra(x: number, y: number, z: number, ahoraMs?: number): Inclinacion | null {
     const g = magnitud(x, y, z);
     if (!Number.isFinite(g) || g < INCLINACION.gMin || g > INCLINACION.gMax) return null;
 
-    const k = INCLINACION.filtro;
+    // Suavizado exponencial en tiempo real (sin ahoraMs se asumen 20 ms entre muestras, como en los tests).
+    const t = ahoraMs ?? this.ultimaMs + 20;
+    const dt = Math.max(1, Math.min(200, t - this.ultimaMs));
+    this.ultimaMs = t;
+    const k = 1 - Math.exp(-dt / INCLINACION.suavizadoMs);
     if (!this.iniciado) {
       [this.fx, this.fy, this.fz] = [x, y, z];
       this.iniciado = true;

@@ -4,6 +4,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { StatusBar } from 'expo-status-bar';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { BackHandler } from 'react-native';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { textoErrorQr } from './src/i18n';
 import { parseJoinUrl } from './src/qr/parseJoinUrl';
 import Control, { DestinoSalida } from './src/screens/Control';
@@ -26,7 +27,17 @@ import { colores } from './src/theme';
 
 type Pantalla = 'inicio' | 'escanear' | 'ayuda' | 'control';
 
+/** Android 15 dibuja la app bajo las barras del sistema: se respetan los márgenes seguros (barra de estado, cámara, navegación). */
 export default function App() {
+  return (
+    <SafeAreaProvider>
+      <Aplicacion />
+    </SafeAreaProvider>
+  );
+}
+
+function Aplicacion() {
+  const insets = useSafeAreaInsets();
   const [pantalla, setPantalla] = useState<Pantalla>('inicio');
   const [listo, setListo] = useState(false);
   const [deviceId, setDeviceId] = useState('');
@@ -118,8 +129,9 @@ export default function App() {
 
   return (
     <>
-      <StatusBar style="light" hidden={pantalla === 'control'} />
+      <StatusBar style="light" />
       {pantalla === 'inicio' && (
+        <View style={{ flex: 1, backgroundColor: colores.fondo, paddingTop: insets.top, paddingBottom: insets.bottom }}>
         <Home
           nombre={nombre}
           onNombre={setNombre}
@@ -143,9 +155,14 @@ export default function App() {
           onConectar={entrar}
           onAyuda={() => setPantalla('ayuda')}
         />
+        </View>
       )}
       {pantalla === 'escanear' && <Scan onLeido={entrar} onPegar={() => setPantalla('inicio')} onVolver={() => setPantalla('inicio')} />}
-      {pantalla === 'ayuda' && <Help version={version} onVolver={() => setPantalla('inicio')} />}
+      {pantalla === 'ayuda' && (
+        <View style={{ flex: 1, backgroundColor: colores.fondo, paddingTop: insets.top, paddingBottom: insets.bottom }}>
+          <Help version={version} onVolver={() => setPantalla('inicio')} />
+        </View>
+      )}
       {pantalla === 'control' && sesion && (
         <Control
           key={claveControl}

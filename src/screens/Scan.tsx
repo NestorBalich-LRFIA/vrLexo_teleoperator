@@ -1,6 +1,7 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import React, { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { t, textoErrorQr } from '../i18n';
 import { parseJoinUrl } from '../qr/parseJoinUrl';
 import type { Sesion } from '../storage';
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function Scan({ onLeido, onPegar, onVolver }: Props) {
+  const insets = useSafeAreaInsets();
   const [permiso, pedirPermiso] = useCameraPermissions();
   const [error, setError] = useState<string | null>(null);
   const bloqueado = useRef(false);
@@ -48,12 +50,12 @@ export default function Scan({ onLeido, onPegar, onVolver }: Props) {
         </View>
       )}
 
-      <View style={styles.arriba} pointerEvents="none">
+      <View style={[styles.arriba, { top: insets.top + 16 }]} pointerEvents="none">
         <Text style={styles.instruccion}>{t('escaneando')}</Text>
         {error && <Text style={styles.error}>{error}</Text>}
       </View>
 
-      <View style={styles.abajo}>
+      <View style={[styles.abajo, { bottom: insets.bottom + 16 }]}>
         <Pressable style={styles.boton} onPress={onPegar} accessibilityRole="button">
           <Text style={styles.botonTexto}>{t('usarEnlace')}</Text>
         </Pressable>

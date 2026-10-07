@@ -3,6 +3,7 @@ import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Animated, AppState, GestureResponderEvent, LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SACUDIDA } from '../config';
 import { t, textoFin } from '../i18n';
@@ -109,6 +110,7 @@ const ETIQUETAS: Record<Boton, { icono: string; clave: 'adelante' | 'atras' | 'g
 
 export default function Control({ sesion, nombre, deviceId, volarSaltando, inclinacion: inclinacionInicial, onSalir }: Props) {
   useKeepAwake();
+  const insets = useSafeAreaInsets();
   // Manejar inclinando: arranca como en Inicio y se puede cambiar acá mismo.
   const [inclinacion, setInclinacion] = useState(inclinacionInicial);
   function alternarInclinacion() {
@@ -171,7 +173,7 @@ export default function Control({ sesion, nombre, deviceId, volarSaltando, incli
         client.setHeliceMovimiento(nivel);
       }
       // Mientras se sacude para volar, la inclinación no mueve el robot (ni la bolita).
-      const inc = volarSaltando && vuelo.activo ? { traction: 0, steering: 0, vx: 0, vy: 0 } : inclinador.current.muestra(x, y, z);
+      const inc = volarSaltando && vuelo.activo ? { traction: 0, steering: 0, vx: 0, vy: 0 } : inclinador.current.muestra(x, y, z, Date.now());
       if (inc) {
         if (inclinacion) client.setInclinacion(inc.traction, inc.steering);
         burbuja.setValue({ x: inc.vx, y: -inc.vy });
@@ -263,7 +265,12 @@ export default function Control({ sesion, nombre, deviceId, volarSaltando, incli
   const enCurso = snap.estado === 'conectando' || snap.estado === 'reconectando';
 
   return (
-    <View style={styles.pantalla}>
+    <View style={[styles.pantalla, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <View style={styles.cabecera}>
+        <Text style={styles.cabeceraTexto} accessibilityRole="header">
+          {t('appNombre')}
+        </Text>
+      </View>
       <View style={styles.barra}>
         <View style={styles.izquierda}>
           <View style={styles.robot}>
@@ -388,6 +395,8 @@ export default function Control({ sesion, nombre, deviceId, volarSaltando, incli
 
 const styles = StyleSheet.create({
   pantalla: { flex: 1, backgroundColor: colores.fondo },
+  cabecera: { alignItems: 'center', justifyContent: 'center', paddingTop: 10, paddingBottom: 6 },
+  cabeceraTexto: { color: colores.texto, fontSize: 18, fontWeight: '800', letterSpacing: 0.3 },
   barra: { height: BARRA, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: MARGEN, gap: 8 },
   izquierda: { flexShrink: 1, gap: 4 },
   acciones: { flexDirection: 'row', alignItems: 'center', gap: 8 },
