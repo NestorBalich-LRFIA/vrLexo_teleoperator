@@ -186,12 +186,13 @@ export default function Control({ canal, robotBleGuardado, onEscanear, onBluetoo
 
   // Segundo plano: soltar todo, cero y cerrar; al volver, reconectar con el mismo deviceId.
   useEffect(() => {
+    if (!canal) return; // sin canal elegido no hay nada que pausar ni reanudar (reanudar abriría un socket sin URL)
     const sub = AppState.addEventListener('change', (estado) => {
       if (estado === 'active') client.reanudar();
       else client.pausar();
     });
     return () => sub.remove();
-  }, [client]);
+  }, [client, canal]);
 
   // Un solo acelerómetro (~50 Hz): hélice por sacudida, burbuja (siempre visible) y manejo por inclinación (solo si está activado).
   const inclinador = useRef(new TiltController());

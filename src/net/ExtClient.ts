@@ -132,6 +132,7 @@ export class ExtClient {
   private hayDireccion = false;
   private ceroPendiente = false;
 
+  private iniciado = false; // alguien llamó a conectar(): sin eso, pausar/reanudar no hacen nada
   private listo = false;
   private huboListo = false;
   private pausado = false;
@@ -169,13 +170,14 @@ export class ExtClient {
 
   conectar() {
     if (this.terminado || this.ws) return;
+    this.iniciado = true;
     this.pausado = false;
     this.abrir();
   }
 
   /** La app pasó a segundo plano: soltar todo, cero, y cerrar el socket sin EXT_LEAVE (el robot espera la gracia). */
   pausar() {
-    if (this.terminado || this.pausado) return;
+    if (!this.iniciado || this.terminado || this.pausado) return;
     this.soltarTodo();
     this.pausado = true;
     this.limpiarTimers();

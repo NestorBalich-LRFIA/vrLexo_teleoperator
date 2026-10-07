@@ -63,6 +63,16 @@ beforeEach(() => {
 });
 afterEach(() => jest.useRealTimers());
 
+describe('ExtClient sin conectar', () => {
+  it('pausar y reanudar no abren ningún socket si nunca se llamó a conectar()', () => {
+    const c = new ExtClient({ url: '', token: '', deviceId: 'd', crearWebSocket: (u) => new WsFalso(u) });
+    c.pausar();
+    c.reanudar();
+    expect(WsFalso.todos).toHaveLength(0);
+    expect(c.getSnapshot().estado).toBe('inactivo');
+  });
+});
+
 describe('ExtClient', () => {
   it('manda EXT_HELLO al abrir y pasa a conectado con EXT_READY', () => {
     const { c, ws } = crear('Ana');
