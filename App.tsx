@@ -163,16 +163,6 @@ function Aplicacion() {
         <Home
           nombre={nombre}
           onNombre={setNombre}
-          volarSaltando={volarSaltando}
-          onVolarSaltando={(v) => {
-            setVolarSaltando(v);
-            guardarVolarSaltando(v);
-          }}
-          inclinacion={inclinacion}
-          onInclinacion={(v) => {
-            setInclinacion(v);
-            guardarInclinacion(v);
-          }}
           sesionGuardada={sesionGuardada}
           mensaje={mensaje}
           version={version}

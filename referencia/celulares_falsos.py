@@ -1,6 +1,6 @@
 """Celulares falsos: prueba de carga y ejemplo del protocolo del modo "Control desde celulares".
 
-Abre N conexiones como si fueran N celulares con la app VR Lexo Control: cada una manda
+Abre N conexiones como si fueran N celulares con la app LexoDive VR Controller: cada una manda
 EXT_HELLO con `spawn` (el servidor le da su robot), y después la mueve (avanza y gira) mandando
 ROBOT_COMMAND cada 50 ms, igual que la app. Sirve para:
   - probar el servidor sin celulares reales (10 a la vez, la reconexión, el filtro de nombres...);

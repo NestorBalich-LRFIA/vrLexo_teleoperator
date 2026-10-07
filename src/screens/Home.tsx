@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
-import { MAX_NOMBRE } from '../config';
+import { KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { MAX_NOMBRE, URL_SITIO } from '../config';
 import { t, textoErrorQr } from '../i18n';
 import { parseJoinUrl } from '../qr/parseJoinUrl';
 import type { Sesion } from '../storage';
@@ -10,10 +10,6 @@ import { colores, radio } from '../theme';
 interface Props {
   nombre: string;
   onNombre: (n: string) => void;
-  volarSaltando: boolean;
-  onVolarSaltando: (v: boolean) => void;
-  inclinacion: boolean;
-  onInclinacion: (v: boolean) => void;
   sesionGuardada: Sesion | null;
   mensaje: string | null;
   actualizacion: Actualizacion | null;
@@ -43,6 +39,13 @@ export default function Home(p: Props) {
           {t('appNombre')}
         </Text>
 
+        <Text style={styles.descripcion}>
+          {t('descripcionInicio')}{' '}
+          <Text style={styles.enlace} onPress={() => Linking.openURL(URL_SITIO)} accessibilityRole="link">
+            vr.lexodive.com
+          </Text>
+        </Text>
+
         {p.mensaje && (
           <View style={styles.mensaje} accessibilityLiveRegion="polite">
             <Text style={styles.mensajeTexto}>{p.mensaje}</Text>
@@ -67,34 +70,6 @@ export default function Home(p: Props) {
           autoCorrect={false}
           accessibilityLabel={t('nombreRobot')}
         />
-
-        <View style={styles.fila}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.etiqueta}>{t('volarSaltando')}</Text>
-            <Text style={styles.ayuda}>{t('volarSaltandoAyuda')}</Text>
-          </View>
-          <Switch
-            value={p.volarSaltando}
-            onValueChange={p.onVolarSaltando}
-            trackColor={{ false: colores.borde, true: colores.acento }}
-            thumbColor={colores.texto}
-            accessibilityLabel={t('volarSaltando')}
-          />
-        </View>
-
-        <View style={styles.fila}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.etiqueta}>{t('manejarInclinando')}</Text>
-            <Text style={styles.ayuda}>{t('manejarInclinandoAyuda')}</Text>
-          </View>
-          <Switch
-            value={p.inclinacion}
-            onValueChange={p.onInclinacion}
-            trackColor={{ false: colores.borde, true: colores.acento }}
-            thumbColor={colores.texto}
-            accessibilityLabel={t('manejarInclinando')}
-          />
-        </View>
 
         <Pressable style={styles.principal} onPress={p.onEscanear} accessibilityRole="button" accessibilityLabel={t('escanear')}>
           <Text style={styles.principalTexto}>📷 {t('escanear')}</Text>
@@ -160,6 +135,8 @@ const styles = StyleSheet.create({
   secundarioTexto: { color: colores.texto, fontSize: 17, fontWeight: '600' },
   pegar: { gap: 10 },
   error: { color: colores.peligro, fontSize: 15, fontWeight: '600' },
+  descripcion: { color: colores.texto, fontSize: 17, lineHeight: 25 },
+  enlace: { color: colores.acento, fontWeight: '800', textDecorationLine: 'underline' },
   fila: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colores.superficie, borderRadius: radio.tarjeta, padding: 14 },
   version: { color: colores.textoSuave, fontSize: 13, textAlign: 'center', marginTop: 8 },
 });

@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "VR Lexo Control",
+    "name": "LexoDive VR Controller",
     "slug": "vrlexo-control",
     "scheme": "vrlexo",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -12,8 +12,8 @@
       "android"
     ],
     "android": {
-      "package": "vrlexo.control",
-      "versionCode": 3,
+      "package": "com.lexodive.vrcontroller",
+      "versionCode": 4,
       "adaptiveIcon": {
         "backgroundColor": "#0b1220",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -69,7 +69,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "VR Lexo Control usa la cámara solo para leer el código QR del simulador.",
+          "cameraPermission": "LexoDive VR Controller usa la cámara solo para leer el código QR del simulador.",
           "recordAudioAndroid": false
         }
       ],

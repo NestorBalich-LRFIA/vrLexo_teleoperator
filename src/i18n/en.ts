@@ -1,7 +1,7 @@
 import type { Claves } from './es';
 
 export const en: Record<Claves, string> = {
-  appNombre: 'VR Lexo Control',
+  appNombre: 'LexoDive VR Controller',
   nombreRobot: 'Robot name',
   nombrePlaceholder: 'Optional (max. 20 characters)',
   escanear: 'Scan QR',
@@ -12,10 +12,8 @@ export const en: Record<Claves, string> = {
   conectar: 'Connect',
   cancelar: 'Cancel',
   comoSeUsa: 'How to use',
-  volarSaltando: 'Fly by moving the phone',
-  volarSaltandoAyuda: 'Move it quickly up and down: the faster, the higher the robot flies.',
+  descripcionInicio: 'Control the VR Lexo simulator robot from your phone and beat the challenges. Open the simulator at',
   manejarInclinando: 'Drive by tilting',
-  manejarInclinandoAyuda: 'Turn the phone like a steering wheel to steer and tilt it forward or back to drive. The buttons still work.',
   calibrar: 'Calibrate',
   altura: 'HEIGHT',
   inclinar: 'Tilt',

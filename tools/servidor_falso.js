@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Servidor falso de desarrollo para VR Lexo Control: implementa el contrato del protocolo R26/EXT_*
+ * Servidor falso de desarrollo para LexoDive VR Controller: implementa el contrato del protocolo R26/EXT_*
  * sin necesitar el backend real. Imprime lo que recibe y permite simular situaciones desde la consola.
  *
  * Uso:   node tools/servidor_falso.js [puerto]        (por defecto 8787)

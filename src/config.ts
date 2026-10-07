@@ -1,7 +1,7 @@
 // Toda la configuración de la app en un solo lugar (hosts, velocidades, tiempos, sacudida, descarga).
 
 /** Identificador de la app Android (debe coincidir con app.json y con assetlinks.json). */
-export const APPLICATION_ID = 'vrlexo.control';
+export const APPLICATION_ID = 'com.lexodive.vrcontroller';
 
 /** Hosts permitidos para el QR en producción. Para cambiarlo, ver README ("Cambiar el host permitido"). */
 export const HOSTS_PERMITIDOS: string[] = ['vr.lexodive.com'];
@@ -18,6 +18,7 @@ export const HOST_ESQUEMA_PROPIO = 'join';
 
 /** Página de descarga del APK (la mantiene el repo del simulador). */
 export const URL_DESCARGA_APK = 'https://vr.lexodive.com/app/vrlexo-control.apk';
+export const URL_SITIO = 'https://vr.lexodive.com';
 export const URL_PAGINA_APP = 'https://vr.lexodive.com/app/';
 
 /** Archivo que publica la versión más nueva (junto al APK) y cuánto se espera la respuesta. */

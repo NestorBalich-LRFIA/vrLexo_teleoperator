@@ -1,7 +1,7 @@
-# VR Lexo Control
+# LexoDive VR Controller
 
 App Android (React Native + Expo + TypeScript) para teleoperar un robot de VR Lexo desde el celular
-(adelante, atrás, girar, volar). Se conecta escaneando el QR del simulador. `applicationId`: `vrlexo.control`.
+(adelante, atrás, girar, volar). Se conecta escaneando el QR del simulador. `applicationId`: `com.lexodive.vrcontroller`.
 
 El encargo completo y el contrato del protocolo están en `docs/PROMPT.md` (y copiados más abajo).
 El servidor y el panel con el QR viven en el repo `vrLexo` (modo "Control desde celulares").

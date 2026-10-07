@@ -1,5 +1,5 @@
 export const es = {
-  appNombre: 'VR Lexo Control',
+  appNombre: 'LexoDive VR Controller',
   // Inicio
   nombreRobot: 'Nombre del robot',
   nombrePlaceholder: 'Opcional (máx. 20 letras)',
@@ -11,10 +11,8 @@ export const es = {
   conectar: 'Conectar',
   cancelar: 'Cancelar',
   comoSeUsa: 'Cómo se usa',
-  volarSaltando: 'Volar moviendo el celular',
-  volarSaltandoAyuda: 'Movelo rápido hacia arriba y abajo: cuanto más rápido, más alto vuela el robot.',
+  descripcionInicio: 'Controlá desde el celular el robot del simulador VR Lexo y superá los desafíos. Entrá al simulador en',
   manejarInclinando: 'Manejar inclinando',
-  manejarInclinandoAyuda: 'Girá el celular como un volante para doblar e inclinalo adelante o atrás para avanzar o retroceder. En el control, la bolita muestra la inclinación aunque esto esté apagado.',
   calibrar: 'Calibrar',
   altura: 'ALTURA',
   inclinar: 'Inclinar',
@@ -75,7 +73,7 @@ export const es = {
   alInicio: 'Ir al inicio',
   // Ayuda
   ayudaPaso1Titulo: '1. Abrí el simulador',
-  ayudaPaso1: 'El docente o un compañero abre VR Lexo en la computadora y activa la conexión remota. Aparece un código QR.',
+  ayudaPaso1: 'Entrá a vr.lexodive.com desde la computadora (el docente o un compañero) y activá la conexión remota. Aparece un código QR.',
   ayudaPaso2Titulo: '2. Escaneá el QR',
   ayudaPaso2: 'Escribí tu nombre (si querés), tocá “Escanear QR” y apuntá la cámara al código.',
   ayudaPaso3Titulo: '3. ¡A manejar!',
