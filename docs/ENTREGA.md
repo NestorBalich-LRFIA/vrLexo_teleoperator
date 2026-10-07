@@ -9,7 +9,7 @@ APK de release firmado, generado en la PC (build local con Gradle) el 2026-10-06
 | Arquitecturas incluidas | `arm64-v8a`, `armeabi-v7a`, `x86_64` |
 | Android mínimo | API 24 |
 | SHA-256 del certificado de firma | `CD:11:40:96:BB:68:4C:83:5C:E8:A8:76:15:57:7C:D6:19:41:68:13:C8:79:67:BD:BF:CE:DA:A3:29:32:1F:3F` |
-| SHA-256 del APK (`vrlexo-control.apk`) | `c6f291c4652f95ce7ec5f8069891e86127538281cad6394546ba0b0846ab89ad` |
+| SHA-256 del APK (`vrlexo-control.apk`) | `6e85e48139d2912664a055e7b9fdc7b8a1d8fe38827b68a35cadfa699f5163e2` |
 | Tamaño del APK | 72013435 bytes (≈ 69 MB, ver `dist/`) |
 | Permisos |  `CAMERA`, `INTERNET`, `VIBRATE` y `ACCESS_NETWORK_STATE` (este último lo agrega React Native; es de nivel normal y no pide permiso al usuario) |
 | Idioma | Español fijo (`IDIOMA_FORZADO` en `src/config.ts`; en/pt disponibles) |
@@ -82,3 +82,5 @@ en la PC (ver "Compilar el APK en la PC" en `README.md`). Notas de esta corrida:
 - Se puede avanzar/girar inclinando y volar sacudiendo al mismo tiempo: mientras se sacude se mantiene la última inclinación válida
   (antes se anulaba y el robot se frenaba). Probado en un celular real.
 - AAB para Play: `dist/LexoDive-VR-Controller-1.1.3.aab`, firmado con la clave de subida (`v2`), una sola cadena de certificados.
+- APK publicable 1.1.3: `dist/vrlexo-control.apk` (paquete `com.lexodive.vrcontroller`, 72105346 bytes), SHA-256 `6e85e481…63e2`,
+  firmado con la clave `v2` (certificado `CD:11:40:96:…:1F:3F`). Publicado en `vrLexo/public/app/` (falta deploy).
