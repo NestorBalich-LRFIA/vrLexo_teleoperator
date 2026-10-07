@@ -38,6 +38,12 @@ export const HZ_ESTADO = 2;
 export const WATCHDOG_MS = 300;
 export const MAX_NOMBRE = 20;
 
+/**
+ * Idioma de la app. `"es"` = siempre español (lo pedido en el encargo); `null` = seguir el idioma del sistema
+ * (es, en o pt; si no está soportado, español). Las traducciones en/pt están en src/i18n/.
+ */
+export const IDIOMA_FORZADO: string | null = 'es';
+
 /** Hélice encendida / apagada (ROBOT_SET.helice). */
 export const HELICE_ON = 100;
 

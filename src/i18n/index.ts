@@ -1,3 +1,4 @@
+import { IDIOMA_FORZADO } from '../config';
 import { en } from './en';
 import { es, type Claves } from './es';
 import { pt } from './pt';
@@ -16,7 +17,7 @@ function idiomaDelSistema(): string {
   }
 }
 
-let actual = idiomaDelSistema();
+let actual = IDIOMA_FORZADO && IDIOMA_FORZADO in idiomas ? IDIOMA_FORZADO : idiomaDelSistema();
 
 export function setIdioma(codigo: string) {
   if (codigo in idiomas) actual = codigo;
