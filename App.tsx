@@ -7,6 +7,7 @@ import { BackHandler } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { textoErrorQr } from './src/i18n';
 import { parseJoinUrl } from './src/qr/parseJoinUrl';
+import AvisoActualizacion from './src/screens/AvisoActualizacion';
 import Control, { DestinoSalida } from './src/screens/Control';
 import Help from './src/screens/Help';
 import Home from './src/screens/Home';
@@ -23,6 +24,7 @@ import {
   obtenerDeviceId,
 } from './src/storage';
 import { View } from 'react-native';
+import { Actualizacion, consultarVersion } from './src/update/actualizacion';
 import { colores } from './src/theme';
 
 type Pantalla = 'inicio' | 'escanear' | 'ayuda' | 'control';
@@ -52,6 +54,22 @@ function Aplicacion() {
   nombreRef.current = nombre;
 
   const version = Constants.expoConfig?.version ?? '1.0.0';
+  const versionCodeLocal = Constants.expoConfig?.android?.versionCode ?? 0;
+
+  // Actualización: se consulta version.json al abrir y al entrar al escáner; si hay una versión mayor se avisa al escanear.
+  const [actualizacion, setActualizacion] = useState<Actualizacion | null>(null);
+  const [pendiente, setPendiente] = useState<{ sesion: Sesion; act: Actualizacion } | null>(null);
+  const consultaVersion = useRef<Promise<Actualizacion | null>>(Promise.resolve(null));
+  const ignorada = useRef(false); // el alumno ya eligió "Continuar igual" en esta ejecución
+  const revisarVersion = useCallback(() => {
+    consultaVersion.current = consultarVersion(versionCodeLocal).then((a) => {
+      setActualizacion(a);
+      return a;
+    });
+  }, [versionCodeLocal]);
+  useEffect(() => {
+    revisarVersion();
+  }, [revisarVersion]);
 
   useEffect(() => {
     (async () => {
@@ -74,18 +92,28 @@ function Aplicacion() {
     setPantalla('control');
   }, []);
 
+  /** Antes de conectar: si hay una versión nueva (se espera hasta 2,5 s a la consulta), se avisa. */
+  const entrarConAviso = useCallback(
+    async (s: Sesion) => {
+      const act = await Promise.race([consultaVersion.current, new Promise<null>((r) => setTimeout(() => r(null), 2500))]);
+      if (act && !ignorada.current) setPendiente({ sesion: s, act });
+      else entrar(s);
+    },
+    [entrar],
+  );
+
   // App Link (https://vr.lexodive.com/app/#s=…&t=…) o vrlexo://join?s=…&t=…: abre la app y conecta.
   const alEnlace = useCallback(
     (url: string | null) => {
       if (!url) return;
       const r = parseJoinUrl(url);
-      if (r.ok) entrar({ url: r.url, token: r.token });
+      if (r.ok) entrarConAviso({ url: r.url, token: r.token });
       else {
         setMensaje(textoErrorQr(r.error));
         setPantalla('inicio');
       }
     },
-    [entrar],
+    [entrarConAviso],
   );
 
   useEffect(() => {
@@ -148,16 +176,21 @@ function Aplicacion() {
           sesionGuardada={sesionGuardada}
           mensaje={mensaje}
           version={version}
+          actualizacion={actualizacion}
+          onActualizar={() => {
+            if (actualizacion) Linking.openURL(actualizacion.url).catch(() => {});
+          }}
           onEscanear={() => {
+            revisarVersion();
             setMensaje(null);
             setPantalla('escanear');
           }}
-          onConectar={entrar}
+          onConectar={entrarConAviso}
           onAyuda={() => setPantalla('ayuda')}
         />
         </View>
       )}
-      {pantalla === 'escanear' && <Scan onLeido={entrar} onPegar={() => setPantalla('inicio')} onVolver={() => setPantalla('inicio')} />}
+      {pantalla === 'escanear' && <Scan onLeido={entrarConAviso} onPegar={() => setPantalla('inicio')} onVolver={() => setPantalla('inicio')} />}
       {pantalla === 'ayuda' && (
         <View style={{ flex: 1, backgroundColor: colores.fondo, paddingTop: insets.top, paddingBottom: insets.bottom }}>
           <Help version={version} onVolver={() => setPantalla('inicio')} />
@@ -172,6 +205,26 @@ function Aplicacion() {
           volarSaltando={volarSaltando}
           inclinacion={inclinacion}
           onSalir={salirDeControl}
+        />
+      )}
+      {pendiente && (
+        <AvisoActualizacion
+          actualizacion={pendiente.act}
+          versionActual={version}
+          onActualizar={() => {
+            // Se guarda el QR para poder "Volver a entrar" después de actualizar.
+            guardarSesion(pendiente.sesion);
+            setSesionGuardada(pendiente.sesion);
+            Linking.openURL(pendiente.act.url).catch(() => {});
+            setPendiente(null);
+            setPantalla('inicio');
+          }}
+          onContinuar={() => {
+            ignorada.current = true;
+            const s = pendiente.sesion;
+            setPendiente(null);
+            entrar(s);
+          }}
         />
       )}
     </>

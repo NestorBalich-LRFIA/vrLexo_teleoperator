@@ -20,6 +20,10 @@ export const HOST_ESQUEMA_PROPIO = 'join';
 export const URL_DESCARGA_APK = 'https://vr.lexodive.com/app/vrlexo-control.apk';
 export const URL_PAGINA_APP = 'https://vr.lexodive.com/app/';
 
+/** Archivo que publica la versión más nueva (junto al APK) y cuánto se espera la respuesta. */
+export const URL_VERSION = 'https://vr.lexodive.com/app/version.json';
+export const VERSION_TIMEOUT_MS = 5000;
+
 /** Velocidad de los botones de movimiento (−100..100). */
 export const SPEED = 70;
 

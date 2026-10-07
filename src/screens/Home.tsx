@@ -4,6 +4,7 @@ import { MAX_NOMBRE } from '../config';
 import { t, textoErrorQr } from '../i18n';
 import { parseJoinUrl } from '../qr/parseJoinUrl';
 import type { Sesion } from '../storage';
+import type { Actualizacion } from '../update/actualizacion';
 import { colores, radio } from '../theme';
 
 interface Props {
@@ -15,6 +16,8 @@ interface Props {
   onInclinacion: (v: boolean) => void;
   sesionGuardada: Sesion | null;
   mensaje: string | null;
+  actualizacion: Actualizacion | null;
+  onActualizar: () => void;
   version: string;
   onEscanear: () => void;
   onConectar: (s: Sesion) => void;
@@ -44,6 +47,13 @@ export default function Home(p: Props) {
           <View style={styles.mensaje} accessibilityLiveRegion="polite">
             <Text style={styles.mensajeTexto}>{p.mensaje}</Text>
           </View>
+        )}
+
+        {p.actualizacion && (
+          <Pressable style={styles.cartelActualizacion} onPress={p.onActualizar} accessibilityRole="button">
+            <Text style={styles.cartelTitulo}>⬆ {t('actualizacionBanner', { v: p.actualizacion.versionName })}</Text>
+            <Text style={styles.cartelBoton}>{t('actualizar')}</Text>
+          </Pressable>
         )}
 
         <Text style={styles.etiqueta}>{t('nombreRobot')}</Text>
@@ -138,6 +148,9 @@ const styles = StyleSheet.create({
   titulo: { color: colores.texto, fontSize: 30, fontWeight: '800', marginTop: 24 },
   mensaje: { backgroundColor: colores.superficieAlta, borderLeftWidth: 6, borderLeftColor: colores.aviso, borderRadius: radio.chico, padding: 14 },
   mensajeTexto: { color: colores.texto, fontSize: 16 },
+  cartelActualizacion: { backgroundColor: colores.superficieAlta, borderLeftWidth: 6, borderLeftColor: colores.ok, borderRadius: radio.chico, padding: 14, gap: 6 },
+  cartelTitulo: { color: colores.texto, fontSize: 16, fontWeight: '700' },
+  cartelBoton: { color: colores.ok, fontSize: 16, fontWeight: '800' },
   etiqueta: { color: colores.texto, fontSize: 16, fontWeight: '700' },
   ayuda: { color: colores.textoSuave, fontSize: 14 },
   input: { backgroundColor: colores.superficie, color: colores.texto, borderColor: colores.borde, borderWidth: 2, borderRadius: radio.chico, paddingHorizontal: 14, minHeight: 52, fontSize: 18 },

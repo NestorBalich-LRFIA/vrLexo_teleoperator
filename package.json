@@ -36,7 +36,8 @@
     "android": "expo run:android",
     "test": "jest",
     "typecheck": "tsc --noEmit",
-    "servidor-falso": "node tools/servidor_falso.js"
+    "servidor-falso": "node tools/servidor_falso.js",
+    "publicar-version": "node tools/publicar_version.js"
   },
   "private": true,
   "description": "Control remoto Android para VR Lexo",

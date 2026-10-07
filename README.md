@@ -85,6 +85,31 @@ apksigner verify --print-certs app-release.apk     # el SHA-256 del certificado 
 
 Los datos de la última entrega (hashes, huella, keystore) están en `docs/ENTREGA.md`.
 
+cm## Actualizaciones de la app
+
+Android no deja que una app instalada fuera de Play Store se reemplace sola: siempre hay que tocar "Instalar". Lo que hace la
+app es **avisar**:
+
+- Al abrirse y al entrar al escáner consulta `https://vr.lexodive.com/app/version.json` (`URL_VERSION` en `src/config.ts`).
+- Si el `versionCode` publicado es mayor que el instalado: en **Inicio** aparece un cartel "Versión nueva disponible" y,
+  **al escanear el QR**, un aviso con "Actualizar" (abre el APK en el navegador para descargarlo e instalarlo) y
+  "Continuar igual" (conecta sin actualizar; no vuelve a preguntar hasta reiniciar la app).
+- Si no hay internet, el servidor tarda más de 5 s o el archivo es raro, no pasa nada y la app sigue normal.
+- Solo se ofrecen descargas de un host de `HOSTS_PERMITIDOS` y por `https`.
+
+`version.json` (lo escribe `tools/publicar_version.js`):
+
+```json
+{ "versionCode": 2, "versionName": "1.1.0", "url": "https://vr.lexodive.com/app/vrlexo-control.apk", "sha256": "…" }
+```
+
+### Publicar una versión nueva
+1. Subir `version` y `android.versionCode` en `app.json` (el `versionCode` **tiene que ser mayor** que el anterior).
+2. Compilar y firmar el APK (ver "Compilar el APK en la PC"); queda en `dist/vrlexo-control.apk`.
+3. `npm run publicar-version` copia el APK y su `.sha256` y escribe `version.json` en `../vrLexo/public/app`
+   (o `node tools/publicar_version.js <carpeta>`). Se niega a publicar una versión menor que la ya publicada.
+4. Commit + push en el repo del simulador y `bash deploy.sh` en vm5.
+
 ## Notas de implementación
 
 - **Multitouch**: las áreas de los 5 botones se calculan por geometría y se detectan con los eventos táctiles crudos
