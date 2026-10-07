@@ -4,8 +4,8 @@ APK de release firmado, generado en la PC (build local con Gradle) el 2026-10-06
 
 | dato | valor |
 |---|---|
-| `applicationId` | `vrlexo.control` |
-| Versión (`version` / `versionCode`) | `1.1.1` / `3` |
+| `applicationId` | `com.lexodive.vrcontroller` (nombre: LexoDive VR Controller) |
+| Versión (`version` / `versionCode`) | `1.1.2` / `4` |
 | Arquitecturas incluidas | `arm64-v8a`, `armeabi-v7a`, `x86_64` |
 | Android mínimo | API 24 |
 | SHA-256 del certificado de firma | `CD:11:40:96:BB:68:4C:83:5C:E8:A8:76:15:57:7C:D6:19:41:68:13:C8:79:67:BD:BF:CE:DA:A3:29:32:1F:3F` |
@@ -66,3 +66,13 @@ en la PC (ver "Compilar el APK en la PC" en `README.md`). Notas de esta corrida:
 - Al subir a Google Play: la clave de este keystore pasa a ser la de subida; hay que agregar al `assetlinks.json` la huella de la
   "firma de apps de Play" (Play Console → Integridad de la app).
 - Después del deploy hay que purgar la caché de Cloudflare de `/app/vrlexo-control.apk` y `/app/version.json` (cachea 4 h).
+
+## 1.1.2 (2026-10-07): nombre y paquete definitivos, para Google Play
+
+- App **LexoDive VR Controller**, `applicationId` `com.lexodive.vrcontroller` (antes `vrlexo.control`; Android la trata como app distinta).
+- Primera pantalla: descripción con el enlace a vr.lexodive.com; los interruptores de volar/inclinar se quitaron (la inclinación se activa en el control).
+- Para Play se sube un **AAB** firmado con la clave de subida (`D:\keystore-vrlexo-control\v2\`). El AAB de Gradle viene firmado con la clave de
+  depuración de la plantilla: hay que borrar `META-INF/ANDROIDD.*` y `MANIFEST.MF` antes de firmar con `jarsigner`, si no Play rechaza
+  "más de una cadena de certificados". Salida: `dist/LexoDive-VR-Controller-1.1.2.aab` (SHA-256 del certificado `CD:11:40:96:…:1F:3F`).
+- Falta: agregar a `assetlinks.json` la huella de la "firma de apps de Play" y publicar un APK con el paquete nuevo en `vr.lexodive.com`
+  (el publicado sigue siendo el 1.1.1 con `vrlexo.control`; por eso `assetlinks.json` y `app/index.html` del repo del simulador siguen sin commitear).
