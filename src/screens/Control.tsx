@@ -181,6 +181,7 @@ export default function Control({ sesion, nombre, deviceId, volarSaltando, incli
     const vuelo = new FlightController();
     let ultimoEnvio = 0;
     let ultimoNivel = 0;
+    let ultimaInc: { traction: number; steering: number; vx: number; vy: number } | null = null;
     inclinador.current.calibrar();
     Accelerometer.setUpdateInterval(SACUDIDA.intervaloSensorMs);
     const sub = Accelerometer.addListener(({ x, y, z }) => {
@@ -192,8 +193,11 @@ export default function Control({ sesion, nombre, deviceId, volarSaltando, incli
         ultimoEnvio = ahora;
         client.setHeliceMovimiento(nivel);
       }
-      // Mientras se sacude para volar, la inclinación no mueve el robot (ni la bolita).
-      const inc = volarSaltando && vuelo.activo ? { traction: 0, steering: 0, vx: 0, vy: 0 } : inclinador.current.muestra(x, y, z, Date.now());
+      // Mientras se sacude para volar, las lecturas del acelerómetro no sirven para medir la inclinación: no se le pasan al
+      // filtro y se mantiene la última inclinación válida, así se puede avanzar/girar y volar al mismo tiempo.
+      const sacudiendo = volarSaltando && vuelo.activo;
+      const inc = sacudiendo ? ultimaInc : inclinador.current.muestra(x, y, z, Date.now());
+      if (!sacudiendo && inc) ultimaInc = inc;
       if (inc) {
         if (inclinacion) client.setInclinacion(inc.traction, inc.steering);
         burbuja.setValue({ x: inc.vx, y: -inc.vy });

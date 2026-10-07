@@ -5,7 +5,7 @@ APK de release firmado, generado en la PC (build local con Gradle) el 2026-10-06
 | dato | valor |
 |---|---|
 | `applicationId` | `com.lexodive.vrcontroller` (nombre: LexoDive VR Controller) |
-| Versión (`version` / `versionCode`) | `1.1.2` / `4` |
+| Versión (`version` / `versionCode`) | `1.1.3` / `5` |
 | Arquitecturas incluidas | `arm64-v8a`, `armeabi-v7a`, `x86_64` |
 | Android mínimo | API 24 |
 | SHA-256 del certificado de firma | `CD:11:40:96:BB:68:4C:83:5C:E8:A8:76:15:57:7C:D6:19:41:68:13:C8:79:67:BD:BF:CE:DA:A3:29:32:1F:3F` |
@@ -76,3 +76,9 @@ en la PC (ver "Compilar el APK en la PC" en `README.md`). Notas de esta corrida:
   "más de una cadena de certificados". Salida: `dist/LexoDive-VR-Controller-1.1.2.aab` (SHA-256 del certificado `CD:11:40:96:…:1F:3F`).
 - Falta: agregar a `assetlinks.json` la huella de la "firma de apps de Play" y publicar un APK con el paquete nuevo en `vr.lexodive.com`
   (el publicado sigue siendo el 1.1.1 con `vrlexo.control`; por eso `assetlinks.json` y `app/index.html` del repo del simulador siguen sin commitear).
+
+## 1.1.3 (2026-10-07)
+
+- Se puede avanzar/girar inclinando y volar sacudiendo al mismo tiempo: mientras se sacude se mantiene la última inclinación válida
+  (antes se anulaba y el robot se frenaba). Probado en un celular real.
+- AAB para Play: `dist/LexoDive-VR-Controller-1.1.3.aab`, firmado con la clave de subida (`v2`), una sola cadena de certificados.
