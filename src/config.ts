@@ -44,6 +44,9 @@ export const MAX_NOMBRE = 20;
  */
 export const IDIOMA_FORZADO: string | null = 'es';
 
+/** Cuánto suena el buzzer al apretar su botón (después se apaga solo). */
+export const BUZZER_MS = 1000;
+
 /** Hélice encendida / apagada (ROBOT_SET.helice). */
 export const HELICE_ON = 100;
 

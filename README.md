@@ -94,7 +94,7 @@ Los datos de la última entrega (hashes, huella, keystore) están en `docs/ENTRE
   robot durante la gracia de 20 s); al volver se reconecta con el mismo `deviceId`.
 - Sin analíticas ni trackers. Permisos: `CAMERA`, `INTERNET`, `VIBRATE` (el resto se bloquea en `app.json`).
 
-## Protocolo (contrato final del servidor)
+ag## Protocolo (contrato final del servidor)
 
 
 **Transporte.** WebSocket de texto a la URL `s` del QR (`wss://vr.lexodive.com/simengine/ws`). Un objeto JSON
@@ -172,7 +172,7 @@ El resto de los campos (`roomId`, `robotIds`, …) se pueden ignorar.
 {"protocol":"R26","version":1,"type":"ROBOT_SET","robotId":"robot-02","helice":100}
 ```
 `helice` 0..100. Botón apretado → `helice:100`; al soltar → `helice:0`. **Extensión de la app:** al mover el celular rápido arriba/abajo manda un valor proporcional (5..100, a lo sumo cada 100 ms) y baja a 0 al parar; si el botón también está apretado manda el mayor.
-`ROBOT_SET` también acepta `led`, `buzzer`, `kicker`, `sword` (booleanos): **la app no los usa**.
+`ROBOT_SET` también acepta `led`, `buzzer`, `kicker`, `sword` (booleanos). **La app usa `led`, `sword` y `buzzer`** (un campo por mensaje, solo al cambiar): el botón LED y el de la espada alternan `true`/`false`; el del buzzer manda `buzzer:true` y 1 s después (`BUZZER_MS` en `src/config.ts`) `buzzer:false`. `kicker` no se usa. Tras reconectar se vuelve a mandar el LED y la espada si estaban activos.
 
 ### 5. Latido
 `{"protocol":"R26","version":1,"type":"PING"}` → el servidor responde `{"protocol":"R26","version":1,"type":"PONG"}`.
@@ -215,7 +215,7 @@ puede volver a entrar escaneando otra vez el mismo QR (si hay lugar).
 | `EXT_HELLO` | app → servidor | conectar y pedir robot propio |
 | `EXT_READY` | servidor → app | conexión aceptada, trae `spawned` |
 | `ROBOT_COMMAND` | app → servidor | mover (cada 50 ms mientras hay botón) |
-| `ROBOT_SET` | app → servidor | volar (`helice`) |
+| `ROBOT_SET` | app → servidor | volar (`helice`), LED, espada láser y buzzer |
 | `PING` / `PONG` | ambos | latido y RTT |
 | `EXT_LEAVE` | app → servidor | botón Desconectar |
 | `EXT_CLOSED` | servidor → app | el servidor te cierra |

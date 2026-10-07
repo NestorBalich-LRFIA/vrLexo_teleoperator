@@ -9,7 +9,7 @@ APK de release firmado, generado en la PC (build local con Gradle) el 2026-10-06
 | Arquitecturas incluidas | `arm64-v8a`, `armeabi-v7a`, `x86_64` |
 | Android mínimo | API 24 |
 | SHA-256 del certificado de firma | `7E:5F:1B:4A:DE:05:52:B7:08:16:57:C4:EF:C6:6C:EA:BF:97:E8:16:91:86:20:B3:5C:5C:AD:77:EF:F8:39:C5` |
-| SHA-256 del APK (`vrlexo-control.apk`) | `58ea53021567329a69634322e2d4431452dd5487aa1e42a4d2445a84cf5078a4` |
+| SHA-256 del APK (`vrlexo-control.apk`) | `1386173e1636eea2c7f7083004e652bf9a08925ce2f4b22e55bde59c42bb8eb3` |
 | Tamaño del APK | 72097154 bytes (≈ 69 MB) |
 | Permisos |  `CAMERA`, `INTERNET`, `VIBRATE` y `ACCESS_NETWORK_STATE` (este último lo agrega React Native; es de nivel normal y no pide permiso al usuario) |
 | Idioma | Español fijo (`IDIOMA_FORZADO` en `src/config.ts`; en/pt disponibles) |

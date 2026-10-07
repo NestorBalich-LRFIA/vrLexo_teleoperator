@@ -1,5 +1,6 @@
 import {
   BACKOFF_MS,
+  BUZZER_MS,
   HELICE_ON,
   HELLO_TIMEOUT_MS,
   HZ_ESTADO,
@@ -60,6 +61,10 @@ export interface Snapshot {
   aviso: Aviso | null;
   /** Hélice (0..100) que pide el usuario (botón Volar o movimiento), conectado o no; sirve para la barra de altura. */
   helice: number;
+  /** Accesorios del robot (lo que pide el usuario, conectado o no). */
+  led: boolean;
+  espada: boolean;
+  buzzer: boolean;
 }
 
 /** Lo mínimo que se usa del WebSocket de React Native (permite inyectar uno falso en los tests). */
@@ -107,7 +112,7 @@ export function clasificarErrorFatal(msg: string): Fin {
 export class ExtClient {
   private readonly opc: OpcionesExtClient;
   private ws: WebSocketLike | null = null;
-  private snap: Snapshot = { estado: 'inactivo', robot: null, pingMs: null, fin: null, aviso: null, helice: 0 };
+  private snap: Snapshot = { estado: 'inactivo', robot: null, pingMs: null, fin: null, aviso: null, helice: 0, led: false, espada: false, buzzer: false };
   private readonly oyentes = new Set<Oyente>();
 
   private botones: Record<Boton, boolean> = { adelante: false, atras: false, izquierda: false, derecha: false, volar: false, stop: false };
@@ -115,6 +120,11 @@ export class ExtClient {
   private inclGiro = 0;
   private heliceMovimiento = 0;
   private heliceEnviada = 0;
+  private led = false;
+  private espada = false;
+  private buzzer = false;
+  private accesoriosEnviados = { led: false, sword: false, buzzer: false };
+  private timerBuzzer: ReturnType<typeof setTimeout> | null = null;
   private hayDireccion = false;
   private ceroPendiente = false;
 
@@ -189,6 +199,7 @@ export class ExtClient {
   /** Cierra todo sin avisar al servidor (al desmontar la pantalla). */
   destruir() {
     this.terminado = true;
+    if (this.timerBuzzer) clearTimeout(this.timerBuzzer);
     this.limpiarTimers();
     this.cerrarSocket();
     this.listo = false;
@@ -237,6 +248,33 @@ export class ExtClient {
     this.sincronizarHelice();
   }
 
+  /** LED del robot: prende / apaga. */
+  alternarLed() {
+    if (this.terminado) return;
+    this.led = !this.led;
+    this.sincronizarAccesorios();
+  }
+
+  /** Espada láser del robot: activa / desactiva. */
+  alternarEspada() {
+    if (this.terminado) return;
+    this.espada = !this.espada;
+    this.sincronizarAccesorios();
+  }
+
+  /** Buzzer: suena BUZZER_MS y se apaga solo (apretarlo de nuevo mientras suena extiende el tiempo). */
+  sonarBuzzer() {
+    if (this.terminado) return;
+    this.buzzer = true;
+    if (this.timerBuzzer) clearTimeout(this.timerBuzzer);
+    this.timerBuzzer = setTimeout(() => {
+      this.timerBuzzer = null;
+      this.buzzer = false;
+      this.sincronizarAccesorios();
+    }, BUZZER_MS);
+    this.sincronizarAccesorios();
+  }
+
   /** Suelta todos los botones y apaga la hélice (mandando el cero si hacía falta). */
   soltarTodo() {
     const habia = this.hayDireccion;
@@ -245,8 +283,15 @@ export class ExtClient {
     this.inclGiro = 0;
     this.hayDireccion = false;
     this.heliceMovimiento = 0;
+    // El buzzer no queda sonando (LED y espada conservan su estado).
+    this.buzzer = false;
+    if (this.timerBuzzer) {
+      clearTimeout(this.timerBuzzer);
+      this.timerBuzzer = null;
+    }
     if (habia) this.enviarCero();
     this.sincronizarHelice();
+    this.sincronizarAccesorios();
   }
 
   // ---- conexión ----
@@ -357,11 +402,13 @@ export class ExtClient {
     this.huboListo = true;
     this.intento = 0;
     this.heliceEnviada = 0;
+    this.accesoriosEnviados = { led: false, sword: false, buzzer: false }; // el robot puede ser nuevo: se vuelve a mandar lo pedido
     this.actualizar({ estado: 'conectado', robot, fin: null });
     this.iniciarTimers();
     if (this.ceroPendiente) this.enviarCero();
     if (this.hayDireccion) this.enviarComando();
     this.sincronizarHelice();
+    this.sincronizarAccesorios();
   }
 
   /** El socket se perdió sin EXT_CLOSED ni ERROR: reconectar con backoff si ya habíamos estado conectados. */
@@ -384,6 +431,7 @@ export class ExtClient {
   private terminar(fin: Fin) {
     if (this.terminado) return;
     this.terminado = true;
+    if (this.timerBuzzer) clearTimeout(this.timerBuzzer);
     this.limpiarTimers();
     this.cerrarSocket();
     this.listo = false;
@@ -445,6 +493,19 @@ export class ExtClient {
     if (!this.listo || !this.snap.robot || deseada === this.heliceEnviada) return;
     this.heliceEnviada = deseada;
     this.enviar({ type: 'ROBOT_SET', robotId: this.snap.robot.id, helice: deseada });
+  }
+
+  private sincronizarAccesorios() {
+    const deseado = { led: this.led, sword: this.espada, buzzer: this.buzzer };
+    if (deseado.led !== this.snap.led || deseado.sword !== this.snap.espada || deseado.buzzer !== this.snap.buzzer) {
+      this.actualizar({ led: deseado.led, espada: deseado.sword, buzzer: deseado.buzzer });
+    }
+    if (!this.listo || !this.snap.robot) return;
+    for (const campo of ['led', 'sword', 'buzzer'] as const) {
+      if (deseado[campo] === this.accesoriosEnviados[campo]) continue;
+      this.accesoriosEnviados[campo] = deseado[campo];
+      this.enviar({ type: 'ROBOT_SET', robotId: this.snap.robot.id, [campo]: deseado[campo] });
+    }
   }
 
   private iniciarTimers() {

@@ -372,3 +372,93 @@ describe('ExtClient: botón STOP', () => {
     expect(ws().tipos('ROBOT_SET').at(-1).helice).toBe(100);
   });
 });
+
+describe('ExtClient: LED, espada láser y buzzer', () => {
+  beforeEach(() => {
+    WsFalso.todos = [];
+    jest.useFakeTimers();
+  });
+  afterEach(() => jest.useRealTimers());
+
+  /** Mensajes ROBOT_SET que traen el campo `campo` (para no mezclar con la hélice). */
+  const con = (ws: WsFalso, campo: string) => ws.tipos('ROBOT_SET').filter((m) => campo in m);
+
+  it('el LED se prende y se apaga, un campo por mensaje', () => {
+    const { c, ws } = conectado();
+    c.alternarLed();
+    expect(con(ws(), 'led').at(-1)).toMatchObject({ robotId: 'robot-02', led: true });
+    expect(Object.keys(con(ws(), 'led').at(-1)).sort()).toEqual(['led', 'protocol', 'robotId', 'type', 'version']);
+    expect(c.getSnapshot().led).toBe(true);
+    c.alternarLed();
+    expect(con(ws(), 'led').map((m) => m.led)).toEqual([true, false]);
+    expect(c.getSnapshot().led).toBe(false);
+  });
+
+  it('la espada láser se activa y se desactiva con el campo sword', () => {
+    const { c, ws } = conectado();
+    c.alternarEspada();
+    c.alternarEspada();
+    expect(con(ws(), 'sword').map((m) => m.sword)).toEqual([true, false]);
+  });
+
+  it('el buzzer suena 1 segundo y se apaga solo', () => {
+    const { c, ws } = conectado();
+    c.sonarBuzzer();
+    expect(con(ws(), 'buzzer').map((m) => m.buzzer)).toEqual([true]);
+    expect(c.getSnapshot().buzzer).toBe(true);
+    jest.advanceTimersByTime(999);
+    expect(con(ws(), 'buzzer')).toHaveLength(1); // todavía suena
+    jest.advanceTimersByTime(1);
+    expect(con(ws(), 'buzzer').map((m) => m.buzzer)).toEqual([true, false]);
+    expect(c.getSnapshot().buzzer).toBe(false);
+  });
+
+  it('apretar el buzzer de nuevo mientras suena extiende el tiempo, sin mandar un apagado de más', () => {
+    const { c, ws } = conectado();
+    c.sonarBuzzer();
+    jest.advanceTimersByTime(600);
+    c.sonarBuzzer();
+    jest.advanceTimersByTime(600); // 1200 ms desde el primero, pero solo 600 desde el segundo
+    expect(con(ws(), 'buzzer').map((m) => m.buzzer)).toEqual([true]);
+    jest.advanceTimersByTime(400);
+    expect(con(ws(), 'buzzer').map((m) => m.buzzer)).toEqual([true, false]);
+  });
+
+  it('lo pedido sin conexión se manda al conectar, y se vuelve a mandar tras reconectar', () => {
+    const { c, ws } = crear();
+    c.alternarLed();
+    c.alternarEspada();
+    expect(c.getSnapshot()).toMatchObject({ led: true, espada: true });
+    expect(ws().enviados).toHaveLength(0);
+    ws().abrir();
+    ws().recibir(READY());
+    expect(con(ws(), 'led').at(-1).led).toBe(true);
+    expect(con(ws(), 'sword').at(-1).sword).toBe(true);
+
+    ws().caer();
+    jest.advanceTimersByTime(1000);
+    ws().abrir();
+    ws().recibir(READY('robot-05')); // robot nuevo
+    expect(con(ws(), 'led').at(-1)).toMatchObject({ robotId: 'robot-05', led: true });
+    expect(con(ws(), 'sword').at(-1)).toMatchObject({ robotId: 'robot-05', sword: true });
+  });
+
+  it('al soltar todo (segundo plano) el buzzer se apaga, pero el LED y la espada quedan', () => {
+    const { c, ws } = conectado();
+    c.alternarLed();
+    c.sonarBuzzer();
+    c.soltarTodo();
+    expect(con(ws(), 'buzzer').map((m) => m.buzzer)).toEqual([true, false]);
+    expect(c.getSnapshot()).toMatchObject({ led: true, buzzer: false });
+    jest.advanceTimersByTime(2000);
+    expect(con(ws(), 'buzzer')).toHaveLength(2); // el timer ya no manda nada
+  });
+
+  it('no manda mensajes de más: el estado repetido no genera tráfico', () => {
+    const { c, ws } = conectado();
+    ws().enviados.length = 0;
+    c.soltarTodo();
+    c.soltarTodo();
+    expect(ws().tipos('ROBOT_SET')).toHaveLength(0);
+  });
+});

@@ -19,6 +19,9 @@ export const es = {
   altura: 'ALTURA',
   inclinar: 'Inclinar',
   parar: 'STOP',
+  led: 'LED',
+  espada: 'Espada',
+  buzzer: 'Buzzer',
   version: 'Versión {{v}}',
   // Escaneo
   escaneando: 'Apuntá la cámara al código QR del simulador',

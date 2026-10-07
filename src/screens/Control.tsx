@@ -34,8 +34,22 @@ interface Rect {
   h: number;
 }
 
-const BOTONES: Boton[] = ['adelante', 'atras', 'izquierda', 'derecha', 'volar', 'stop'];
-const NINGUNO: Record<Boton, boolean> = { adelante: false, atras: false, izquierda: false, derecha: false, volar: false, stop: false };
+// Accesorios del robot (ROBOT_SET led / sword / buzzer): van en las celdas libres de la cruz.
+type Accion = 'led' | 'espada' | 'buzzer';
+type Tecla = Boton | Accion;
+const ACCIONES: Accion[] = ['led', 'espada', 'buzzer'];
+const BOTONES: Tecla[] = ['adelante', 'atras', 'izquierda', 'derecha', 'volar', 'stop', 'led', 'espada', 'buzzer'];
+const NINGUNO: Record<Tecla, boolean> = {
+  adelante: false,
+  atras: false,
+  izquierda: false,
+  derecha: false,
+  volar: false,
+  stop: false,
+  led: false,
+  espada: false,
+  buzzer: false,
+};
 const BARRA = 64;
 const MARGEN = 16;
 const HUECO = 12;
@@ -46,7 +60,7 @@ const ALTO_INCLINAR = 48;
  * De abajo hacia arriba: la cruz (adelante arriba, atrás abajo, girar a los lados, STOP en el centro y Volar en la
  * esquina de arriba a la derecha, junto a adelante), el botón Manejar inclinando y, arriba de todo, los instrumentos.
  */
-function calcularRects(w: number, h: number): Record<Boton, Rect> {
+function calcularRects(w: number, h: number): Record<Tecla, Rect> {
   // Con los instrumentos arriba (mínimo 64), achicar los botones sin bajar de BOTON_MIN.
   const lado = Math.max(BOTON_MIN, Math.min(150, (w - 2 * MARGEN - 2 * HUECO) / 3, (h - 184) / 3));
   const cruz = 3 * lado + 2 * HUECO;
@@ -60,6 +74,9 @@ function calcularRects(w: number, h: number): Record<Boton, Rect> {
     atras: { x: x0 + paso, y: y0 + 2 * paso, w: lado, h: lado },
     stop: { x: x0 + paso, y: y0 + paso, w: lado, h: lado },
     volar: { x: x0 + 2 * paso, y: y0, w: lado, h: lado },
+    led: { x: x0, y: y0, w: lado, h: lado },
+    espada: { x: x0, y: y0 + 2 * paso, w: lado, h: lado },
+    buzzer: { x: x0 + 2 * paso, y: y0 + 2 * paso, w: lado, h: lado },
   };
 }
 
@@ -76,7 +93,7 @@ interface Instrumentos {
  * (rectángulo, tan ancho y alto como entre) y la barra de altura a su derecha. Si no hay lugar, se oculta el cuadro y
  * la barra queda arriba a la derecha.
  */
-function calcularInstrumentos(w: number, rects: Record<Boton, Rect>): Instrumentos {
+function calcularInstrumentos(w: number, rects: Record<Tecla, Rect>): Instrumentos {
   const ancho = ANCHO_PANEL_ALTURA;
   const inclinar: Rect = { x: MARGEN, y: rects.adelante.y - HUECO - ALTO_INCLINAR, w: w - 2 * MARGEN, h: ALTO_INCLINAR };
   const tope = 8;
@@ -99,13 +116,16 @@ function calcularInstrumentos(w: number, rects: Record<Boton, Rect>): Instrument
   };
 }
 
-const ETIQUETAS: Record<Boton, { icono: string; clave: 'adelante' | 'atras' | 'girarIzquierda' | 'girarDerecha' | 'volar' | 'parar' }> = {
+const ETIQUETAS: Record<Tecla, { icono: string; clave: 'adelante' | 'atras' | 'girarIzquierda' | 'girarDerecha' | 'volar' | 'parar' | 'led' | 'espada' | 'buzzer' }> = {
   adelante: { icono: '▲', clave: 'adelante' },
   atras: { icono: '▼', clave: 'atras' },
   izquierda: { icono: '◀', clave: 'girarIzquierda' },
   derecha: { icono: '▶', clave: 'girarDerecha' },
   volar: { icono: '🚁', clave: 'volar' },
   stop: { icono: '■', clave: 'parar' },
+  led: { icono: '💡', clave: 'led' },
+  espada: { icono: '⚔️', clave: 'espada' },
+  buzzer: { icono: '🔔', clave: 'buzzer' },
 };
 
 export default function Control({ sesion, nombre, deviceId, volarSaltando, inclinacion: inclinacionInicial, onSalir }: Props) {
@@ -122,8 +142,8 @@ export default function Control({ sesion, nombre, deviceId, volarSaltando, incli
   const client = useMemo(() => new ExtClient({ url: sesion.url, token: sesion.token, deviceId, name: nombre }), [sesion, deviceId, nombre]);
   const snap = useSyncExternalStore(client.subscribe, client.getSnapshot);
   const [tam, setTam] = useState({ w: 0, h: 0 });
-  const [apretados, setApretados] = useState<Record<Boton, boolean>>({ ...NINGUNO });
-  const previo = useRef<Record<Boton, boolean>>({ ...apretados });
+  const [apretados, setApretados] = useState<Record<Tecla, boolean>>({ ...NINGUNO });
+  const previo = useRef<Record<Tecla, boolean>>({ ...apretados });
   const [toast, setToast] = useState<string | null>(null);
   const rects = useMemo(() => calcularRects(tam.w, tam.h), [tam]);
   const instr = useMemo(() => calcularInstrumentos(tam.w, rects), [tam.w, rects]);
@@ -229,7 +249,7 @@ export default function Control({ sesion, nombre, deviceId, volarSaltando, incli
 
   // Multitouch real: cada evento recalcula qué botones tienen algún dedo encima.
   function alTocar(e: GestureResponderEvent) {
-    const ahora: Record<Boton, boolean> = { ...NINGUNO };
+    const ahora: Record<Tecla, boolean> = { ...NINGUNO };
     for (const toque of e.nativeEvent.touches) {
       for (const b of BOTONES) {
         const r = rects[b];
@@ -246,7 +266,16 @@ export default function Control({ sesion, nombre, deviceId, volarSaltando, incli
     for (const b of BOTONES) {
       if (ahora[b] === previo.current[b]) continue;
       cambio = true;
-      client.setBoton(b, ahora[b]);
+      if (ACCIONES.includes(b as Accion)) {
+        // Accesorios: se accionan al apoyar el dedo (LED y espada alternan; el buzzer suena 1 s).
+        if (ahora[b]) {
+          if (b === 'led') client.alternarLed();
+          else if (b === 'espada') client.alternarEspada();
+          else client.sonarBuzzer();
+        }
+      } else {
+        client.setBoton(b as Boton, ahora[b]);
+      }
       if (ahora[b]) Haptics.selectionAsync().catch(() => {});
     }
     if (cambio) {
@@ -331,7 +360,9 @@ export default function Control({ sesion, nombre, deviceId, volarSaltando, incli
         {tam.w > 0 &&
           BOTONES.map((b) => {
             const r = rects[b];
-            const on = apretados[b];
+            // Encendido: dedo encima, o accesorio activo (LED, espada, buzzer sonando).
+            const activo = (b === 'led' && snap.led) || (b === 'espada' && snap.espada) || (b === 'buzzer' && snap.buzzer);
+            const on = apretados[b] || activo;
             return (
               <View
                 key={b}

@@ -157,7 +157,7 @@ wss.on('connection', (ws) => {
       }
       case 'ROBOT_SET':
         if (msg.robotId !== cel.id) return error(ws, 'robotId no permitido o desconocido');
-        return log(`${cel.name}: ROBOT_SET`, JSON.stringify({ helice: msg.helice }));
+        return log(`${cel.name}: ROBOT_SET`, JSON.stringify(Object.fromEntries(['helice', 'led', 'sword', 'buzzer', 'kicker'].filter((k) => k in msg).map((k) => [k, msg[k]]))));
       case 'EXT_LEAVE':
         log(`- ${cel.name} salió (EXT_LEAVE): robot quitado, el token sigue valiendo`);
         celulares.delete(ctx.deviceId);
