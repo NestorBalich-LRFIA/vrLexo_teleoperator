@@ -67,6 +67,24 @@ eas build -p android --profile production-aab    # AAB
 La primera vez EAS ofrece crear el keystore: aceptar. `appVersionSource` es `local`: subir `version` y
 `android.versionCode` en `app.json` en cada release.
 
+## Compilar el APK en la PC (alternativa a EAS, Windows)
+
+`eas build --local` no anda en Windows. Se puede compilar con Gradle si hay Android SDK (Android Studio) y **JDK 17**
+(con el JDK 25 que trae Android Studio falla el paso de CMake):
+
+```powershell
+npx expo prebuild -p android --no-install          # genera android/ (está en .gitignore)
+$env:JAVA_HOME = "<ruta al JDK 17>"; $env:ANDROID_HOME = "<ruta al SDK>"
+# android/local.properties:  sdk.dir=<ruta al SDK, con \\ y \: escapados>
+cd android
+.\gradlew.bat assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a,x86_64
+# el APK sale firmado con la clave de depuración: volver a firmarlo con el keystore propio
+apksigner sign --ks <vrlexo-control.jks> --ks-key-alias vrlexo --ks-pass env:KS_PW --key-pass env:KS_PW app-release.apk
+apksigner verify --print-certs app-release.apk     # el SHA-256 del certificado va en assetlinks.json
+```
+
+Los datos de la última entrega (hashes, huella, keystore) están en `docs/ENTREGA.md`.
+
 ## Notas de implementación
 
 - **Multitouch**: las áreas de los 5 botones se calculan por geometría y se detectan con los eventos táctiles crudos
