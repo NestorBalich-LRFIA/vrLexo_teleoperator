@@ -5,12 +5,12 @@ APK de release firmado, generado en la PC (build local con Gradle) el 2026-10-06
 | dato | valor |
 |---|---|
 | `applicationId` | `vrlexo.control` |
-| Versión (`version` / `versionCode`) | `1.1.0` / `2` |
+| Versión (`version` / `versionCode`) | `1.1.1` / `3` |
 | Arquitecturas incluidas | `arm64-v8a`, `armeabi-v7a`, `x86_64` |
 | Android mínimo | API 24 |
-| SHA-256 del certificado de firma | `7E:5F:1B:4A:DE:05:52:B7:08:16:57:C4:EF:C6:6C:EA:BF:97:E8:16:91:86:20:B3:5C:5C:AD:77:EF:F8:39:C5` |
-| SHA-256 del APK (`vrlexo-control.apk`) | `02f4a20cf28704fa4d53049c39d8334ed480bcc039c62f764dbe261424ec1c6f` |
-| Tamaño del APK | 72105346 bytes (≈ 69 MB) |
+| SHA-256 del certificado de firma | `CD:11:40:96:BB:68:4C:83:5C:E8:A8:76:15:57:7C:D6:19:41:68:13:C8:79:67:BD:BF:CE:DA:A3:29:32:1F:3F` |
+| SHA-256 del APK (`vrlexo-control.apk`) | `c6f291c4652f95ce7ec5f8069891e86127538281cad6394546ba0b0846ab89ad` |
+| Tamaño del APK | 72013435 bytes (≈ 69 MB, ver `dist/`) |
 | Permisos |  `CAMERA`, `INTERNET`, `VIBRATE` y `ACCESS_NETWORK_STATE` (este último lo agrega React Native; es de nivel normal y no pide permiso al usuario) |
 | Idioma | Español fijo (`IDIOMA_FORZADO` en `src/config.ts`; en/pt disponibles) |
 | Esquemas de firma | APK Signature Scheme v2 y v3 (verificado con `apksigner verify`) |
@@ -21,7 +21,7 @@ El certificado es `CN=VR Lexo Control, O=VR Lexo`, RSA 2048, válido hasta 2054-
 
 La app consulta `https://vr.lexodive.com/app/version.json` y avisa si hay una versión nueva (ver "Actualizaciones de la app" en
 `README.md`). `npm run publicar-version` copia el APK y escribe ese archivo; el `versionCode` de `app.json` hay que subirlo en cada release.
-El `version.json` publicado ahora dice `versionCode 2` / `1.1.0`.
+El `version.json` publicado ahora dice `versionCode 3` / `1.1.1`.
 
 ## Qué se hizo con los archivos
 
@@ -57,3 +57,12 @@ en la PC (ver "Compilar el APK en la PC" en `README.md`). Notas de esta corrida:
   depuración de la plantilla; se volvió a firmar con `apksigner` y el keystore de arriba.
 - En EAS quedó creado el proyecto `@nbalich/vrlexo-control` (su `projectId` está en `app.json`) con un keystore propio de EAS
   que **no se usó**: el build de la nube se canceló. Se puede borrar desde expo.dev si se quiere.
+
+## 1.1.1 (2026-10-07)
+
+- Arregla la bolita lenta del APK: se agregó `HIGH_SAMPLING_RATE_SENSORS` (sin él, Android 12+ entrega el acelerómetro a ~5 Hz).
+- **Keystore nuevo** (`v2\`): se había perdido la contraseña del anterior. Como todavía no hay usuarios, se cambió la firma:
+  quien tenga la 1.0/1.1.0 instalada debe **desinstalarla** antes de instalar la 1.1.1. El `assetlinks.json` ya tiene la huella nueva.
+- Al subir a Google Play: la clave de este keystore pasa a ser la de subida; hay que agregar al `assetlinks.json` la huella de la
+  "firma de apps de Play" (Play Console → Integridad de la app).
+- Después del deploy hay que purgar la caché de Cloudflare de `/app/vrlexo-control.apk` y `/app/version.json` (cachea 4 h).
