@@ -3,7 +3,7 @@
     "name": "LexoDive VR Controller",
     "slug": "vrlexo-control",
     "scheme": "vrlexo",
-    "version": "1.1.3",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -13,7 +13,7 @@
     ],
     "android": {
       "package": "com.lexodive.vrcontroller",
-      "versionCode": 5,
+      "versionCode": 6,
       "adaptiveIcon": {
         "backgroundColor": "#0b1220",
         "foregroundImage": "./assets/android-icon-foreground.png",

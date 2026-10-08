@@ -84,3 +84,11 @@ en la PC (ver "Compilar el APK en la PC" en `README.md`). Notas de esta corrida:
 - AAB para Play: `dist/LexoDive-VR-Controller-1.1.3.aab`, firmado con la clave de subida (`v2`), una sola cadena de certificados.
 - APK publicable 1.1.3: `dist/vrlexo-control.apk` (paquete `com.lexodive.vrcontroller`, 72105346 bytes), SHA-256 `6e85e481…63e2`,
   firmado con la clave `v2` (certificado `CD:11:40:96:…:1F:3F`). Publicado en `vrLexo/public/app/` (falta deploy).
+
+## 1.2.0 (2026-10-08): AAB para Google Play
+
+- `version` 1.2.0 / `versionCode` 6. Incluye entrada directa al control con conexión por QR o Bluetooth (BLE).
+- AAB: `dist/LexoDive-VR-Controller-1.2.0.aab` (49022880 bytes), SHA-256 `9c77d534624796a49931416ad132ec5a7bca0008999b0f1257d7329d4d791f6a`.
+- Firmado con la clave de subida (`v2`), una sola cadena de certificados: `CD:11:40:96:…:1F:3F` (verificado con `jarsigner -verify` y `keytool -printcert`).
+- Compilado con JDK 17 (`D:\herramientas-build\jdk17`): `gradlew bundleRelease`, luego se quitó la firma de depuración y se firmó con `jarsigner`.
+- No hay APK 1.2.0 publicado: el de `vr.lexodive.com/app/` sigue siendo el 1.1.3.
