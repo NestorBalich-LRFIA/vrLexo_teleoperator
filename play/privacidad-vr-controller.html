@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Política de privacidad – LexoDive VR Controller</title>
+<style>
+  body { font: 16px/1.6 system-ui, sans-serif; max-width: 760px; margin: 0 auto; padding: 24px 16px 64px; color: #1a1a1a; }
+  h1 { font-size: 1.6rem; } h2 { font-size: 1.15rem; margin-top: 2rem; }
+  table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+  th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #f2f2f2; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #121212; color: #e6e6e6; } th { background: #222; } th, td { border-color: #444; }
+    a { color: #8ab4f8; }
+  }
+</style>
+</head>
+<body>
+<h1>Política de privacidad de LexoDive VR Controller</h1>
+<p>Última actualización: 8 de octubre de 2026.</p>
+
+<p><strong>LexoDive VR Controller</strong> (paquete <code>com.lexodive.vrcontroller</code>) es una aplicación Android gratuita que sirve de control remoto para el simulador VR Lexo (<a href="https://vr.lexodive.com">vr.lexodive.com</a>) y para robots compatibles por Bluetooth. Esta política describe qué datos usa la aplicación y para qué.</p>
+
+<h2>Responsable</h2>
+<p>LexoDive, desarrollador de la aplicación y del simulador. Contacto: <a href="mailto:lexodive@gmail.com">lexodive@gmail.com</a>.</p>
+
+<h2>Resumen</h2>
+<p>La aplicación no tiene cuentas, no muestra anuncios, no usa analíticas ni herramientas de seguimiento, no vende datos y no los comparte con terceros. No recoge tu ubicación, contactos, fotos, audio ni archivos.</p>
+
+<h2>Qué datos se usan</h2>
+<table>
+  <tr><th>Dato</th><th>Para qué</th><th>Dónde va</th></tr>
+  <tr><td>Apodo del robot (opcional, hasta 20 letras)</td><td>Mostrar tu robot en el simulador</td><td>Solo al servidor del simulador (modo QR). Se elimina al salir.</td></tr>
+  <tr><td>Identificador aleatorio generado por la app (UUID). No es el IMEI, ni el ID de publicidad ni ningún identificador del dispositivo</td><td>Recuperar el mismo robot tras un corte de conexión</td><td>Se guarda en el teléfono y se envía al servidor del simulador (modo QR)</td></tr>
+  <tr><td>Comandos de control (botones, inclinación y movimiento del teléfono)</td><td>Manejar el robot en tiempo real</td><td>Al servidor del simulador (modo QR) o directamente al robot (modo Bluetooth). No se almacenan.</td></tr>
+  <tr><td>Imagen de la cámara</td><td>Leer el código QR de conexión</td><td>Se procesa en el momento en el teléfono. <strong>No se guarda ni se envía ninguna imagen.</strong></td></tr>
+</table>
+
+<h2>Permisos</h2>
+<ul>
+  <li><strong>Cámara:</strong> solo para escanear el QR.</li>
+  <li><strong>Bluetooth (buscar y conectar):</strong> solo para encontrar y hablar con el robot elegido. En Android 11 o anterior el sistema exige además el permiso de ubicación para buscar dispositivos Bluetooth; la aplicación <strong>no accede a tu ubicación</strong>.</li>
+  <li><strong>Internet:</strong> para comunicarse con el servidor del simulador, siempre con conexión cifrada (<code>wss://</code>).</li>
+  <li><strong>Sensores de movimiento y vibración:</strong> para manejar inclinando el teléfono y dar respuesta al tocar un botón. Los datos de los sensores no salen del teléfono salvo como comandos de control.</li>
+</ul>
+
+<h2>Con quién se comparten</h2>
+<p>Con nadie. Los datos del modo QR los recibe únicamente el servidor del simulador VR Lexo, que pertenece al mismo desarrollador. No se comparten con anunciantes, redes publicitarias, corredores de datos ni otros terceros. El tratamiento de los datos del simulador se rige además por su propia Política de Privacidad en <a href="https://vr.lexodive.com">vr.lexodive.com</a>.</p>
+
+<h2>Conservación y eliminación</h2>
+<p>El servidor no conserva el apodo ni los comandos una vez que el robot sale del simulador. El UUID queda guardado solo en tu teléfono: se elimina al desinstalar la aplicación o borrar sus datos. Si querés que se borre cualquier dato asociado a tu uso, escribinos a <a href="mailto:lexodive@gmail.com">lexodive@gmail.com</a>.</p>
+
+<h2>Seguridad</h2>
+<p>Las comunicaciones con el servidor de producción van cifradas (TLS). La aplicación solo acepta conectarse a los servidores autorizados del simulador.</p>
+
+<h2>Menores</h2>
+<p>La aplicación es una herramienta para el aula y no pide datos personales como nombre real, correo ni edad. El único dato de texto es un apodo opcional. Se recomienda que docentes o tutores supervisen a los menores al elegirlo.</p>
+
+<h2>Cambios</h2>
+<p>Si esta política cambia, publicaremos la nueva versión en esta misma dirección con la fecha actualizada.</p>
+
+<h2>Contacto</h2>
+<p><a href="mailto:lexodive@gmail.com">lexodive@gmail.com</a></p>
+</body>
+</html>
