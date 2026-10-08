@@ -42,9 +42,9 @@ La app no tiene login, pero **todo requiere un QR o un robot**, y el revisor no 
 (completar con datos reales):
 
 > La app abre directo en el control. Para conectar hay dos opciones: "Conectar con QR" (necesita el código QR que genera el simulador en https://vr.lexodive.com al activar la conexión remota) y "Conectar por Bluetooth" (necesita un robot compatible cercano).
-> Para revisar: [pasos/enlace de prueba o video que muestre el flujo completo]. Ejemplo de enlace de conexión: https://vr.lexodive.com/app/#s=<wss>&t=<token>.
+> Video del flujo completo: https://www.youtube.com/watch?v=UMkvMEHgneM
 
-⚠️ Hace falta preparar un QR/enlace de prueba que no venza o un **video corto** (YouTube no listado) mostrando el flujo; sin eso el revisor puede rechazar la app por "no se puede probar".
+Video para el revisor (YouTube, no listado) ya subido; guion en `play/guion-video-revisor.md`.
 
 ## Clasificación de contenido (cuestionario IARC)
 Sin violencia gráfica, sin contenido sexual, sin lenguaje fuerte, sin sustancias, sin apuestas, sin interacción entre usuarios ni compartir ubicación. Resultado esperado: apta para todo público.
